@@ -9,7 +9,7 @@ void partition_file_data(char *input_file, int n, char *blocks_folder) {
     int first = floor(fp/n);
     int last_file = first + fp % n;
     for(int i = 0; i < n-2; i++){
-        
+        // very rough will probably cause memory erros
     }
 }
 
