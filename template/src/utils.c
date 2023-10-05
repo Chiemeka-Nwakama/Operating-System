@@ -22,7 +22,7 @@ void partition_file_data(char *input_file, int n, char *blocks_folder) {
 
         char fileName[7];
         char buffer[firstOrLast];
-        sprintf(fileName, "%d.txt", i); //create char array for filename of n.txt
+        sprintf(fileName, "%s/%d.txt",blocks_folder, i); //create char array for filename of n.txt
         FILE* fp2 = fopen(fileName, "w"); //creates second file pointer creates N.txt
         size_t bytesRead = fread(buffer, 1, sizeof(buffer), fp); //reads the bytes from input_file to put in the partition
         printf("%d \n", firstOrLast);
