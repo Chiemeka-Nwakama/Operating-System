@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
         perror("Invalid amount of data blocks");
         exit(-1);
     }
-    FILE *file = fopen(input_file,"w")
+    FILE *file = fopen(input_file,"r");
     if(file == NULL){
         perror("No such file");
         exit(-1);
