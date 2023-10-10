@@ -26,6 +26,14 @@ int main(int argc, char* argv[]) {
     pid_t pid;
     if(child_id >= n-1 && child_id <= 2*n-2){
             hash_data_block(data_from_hash, argv[4]);//computes hash of the block 
+            char blockFileName[1024]; //block file name
+            sprintf(blockFileName,"output/hashes/%d.out", n);
+
+            FILE* blockfp = fopen(blockFileName, "w"); //creates second file pointer
+            fwrite(data_from_hash, 1, 1024, blockfp); //writes to blockFile
+            fclose(blockfp); // close file
+
+
     }
     
     // TODO: If the current process is not a leaf process, spawn two child processes using  
