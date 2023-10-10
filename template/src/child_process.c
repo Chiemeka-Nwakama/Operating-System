@@ -32,9 +32,9 @@ int main(int argc, char* argv[]) {
     // exec() and ./child_process. 
     else if(child_id <= n-1){
         pid = fork();
-        execl(argv[0], 2*child_id+1);//Spawn child 1
+        execl(argv[0], 2*child_id+1, NULL);//Spawn child 1
         pid = fork();
-        execl(argv[0], 2*child_id+2);//Spawn child 2
+        execl(argv[0], 2*child_id+2, NULL);//Spawn child 2
 
         // TODO: Wait for the two child processes to finish
         wait(NULL);
