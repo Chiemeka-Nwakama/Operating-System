@@ -32,7 +32,6 @@ int main(int argc, char* argv[]) {
 
 
     //close file
-
     fclose(file);
 
     // ##### DO NOT REMOVE #####
@@ -46,11 +45,10 @@ int main(int argc, char* argv[]) {
     pid_t pid;
 	pid = fork();
     if(pid == 0){
-        execl("./child_process","./child_process", blocks_folder, hashes_folder,argv[2],"0",NULL);
+        execl("./child_process","./child_process", blocks_folder, hashes_folder,argv[2],"0",NULL);//rum child_process
     }
    
-  
-    wait(NULL);
+    wait(NULL);//Wait for child process
   
 
     // ##### DO NOT REMOVE #####
