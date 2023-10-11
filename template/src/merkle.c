@@ -20,11 +20,13 @@ int main(int argc, char* argv[]) {
     char *input_file = argv[1];
     int n = atoi(argv[2]);
 
+    //error check
     if((n & (n - 1)) != 0){
         perror("Invalid amount of data blocks");
         exit(-1);
     }
     FILE *file = fopen(input_file,"r");
+    //file error check
     if(file == NULL){
         perror("No such file");
         exit(-1);

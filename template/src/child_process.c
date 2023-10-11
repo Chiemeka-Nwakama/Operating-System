@@ -37,6 +37,7 @@ int main(int argc, char* argv[]) {
  
         FILE* blockfp = fopen(blockFileName, "w"); //creates second file pointer
 
+        //file open error check
         if(blockfp == NULL){
             perror("No such file");
             exit(-1);
