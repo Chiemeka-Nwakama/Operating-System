@@ -27,25 +27,23 @@ int main(int argc, char* argv[]) {
   
     if(child_id >= n-1 && child_id <= 2*n-2){
        
-            char buff[10];
-            sprintf(buff, "%s/%d.txt", argv[1], child_id-n+1);
+        char buff[10];
+        sprintf(buff, "%s/%d.txt", argv[1], child_id-n+1);//Adding blocks folder and leafs to buff
          
-            hash_data_block(data_from_hash, buff);//computes hash of the block 
+        hash_data_block(data_from_hash, buff);//computes hash of the block 
     
-            char blockFileName[1024]; //block file name
-            sprintf(blockFileName,"output/hashes/%d.out", child_id);
+        char blockFileName[1024]; //block file name
+        sprintf(blockFileName,"output/hashes/%d.txt", child_id);//Giving blockFileName the correct output file
  
+        FILE* blockfp = fopen(blockFileName, "w"); //creates second file pointer
 
-   
-            FILE* blockfp = fopen(blockFileName, "w"); //creates second file pointer
+        if(blockfp == NULL){
+            perror("No such file");
+            exit(-1);
+        }
 
-            if(blockfp == NULL){
-                perror("No such file");
-                 exit(-1);
-    }
-
-            fwrite(data_from_hash, 1, 1024, blockfp); //writes to blockFile
-            fclose(blockfp); // close file
+        fwrite(data_from_hash, 1, 1024, blockfp); //writes to blockFile
+        fclose(blockfp); // close file
 
 
     }
@@ -54,44 +52,44 @@ int main(int argc, char* argv[]) {
     // exec() and ./child_process. 
     else if(child_id < n-1){
         
-         char c1[50];
-         sprintf(c1, "%d", 2*child_id+1);
-         char c2[50];
-        sprintf(c2, "%d", 2*child_id+2);
+        char c1[50];
+        sprintf(c1, "%d", 2*child_id+1);//Left child ID parameter
+        char c2[50];
+        sprintf(c2, "%d", 2*child_id+2);//Right child ID parameter
+
         pid = fork();
         if(pid == 0){
-               execl(argv[0], argv[0], argv[1], argv[2], argv[3], c1, NULL);//Spawn child 1
-
+            execl(argv[0], argv[0], argv[1], argv[2], argv[3], c1, NULL);//Spawn child 1
         }
      
         pid = fork();
         if(pid == 0){
-        execl(argv[0], argv[0], argv[1], argv[2], argv[3], c2, NULL);//Spawn child 2
+            execl(argv[0], argv[0], argv[1], argv[2], argv[3], c2, NULL);//Spawn child 2
         }
         
         // TODO: Wait for the two child processes to finish
-        wait(NULL);
-        wait(NULL);
+        wait(NULL);//Wait for child 1
+        wait(NULL);//Wait for child 2
 
         // TODO: Retrieve the two hashes from the two child processes from output/hashes/
         // and compute and output the hash of the concatenation of the two hashes.
-        char child1[256]; //child file name
-        char child2[256]; //child file name
-         sprintf(child1,"output/hashes/%d.out", 2*child_id+1);
-         sprintf(child2,"output/hashes/%d.out", 2*child_id+2);
+        char child1[256]; //child 1 file name
+        char child2[256]; //child 2 file name
+        sprintf(child1,"output/hashes/%d.out", 2*child_id+1);
+        sprintf(child2,"output/hashes/%d.out", 2*child_id+2);
         //error check
-         FILE* cd1  = fopen(child1, "r");// make cd1 file pointer
-         if(cd1 == NULL){
-        perror("No such file");
-        exit(-1);
-    }
+        FILE* cd1  = fopen(child1, "r");// make cd1 file pointer
+        if(cd1 == NULL){
+            perror("No such file");
+            exit(-1);
+        }
       
-         FILE* cd2  = fopen(child2, "r"); //make cd2 file pointer 
+        FILE* cd2  = fopen(child2, "r"); //make cd2 file pointer 
         // error check
-           if(cd2 == NULL){
-        perror("No such file");
-        exit(-1);
-    }
+        if(cd2 == NULL){
+            perror("No such file");
+            exit(-1);
+        }
        
         //read files of 2 childern
         fscanf(cd1, "%s", read_child1);//read child 1
@@ -101,8 +99,8 @@ int main(int argc, char* argv[]) {
         compute_dual_hash(dual_hash_result, read_child1, read_child2);
 
         //store results into current nodes of output file
-         char fileName[1024]; //block file name
-         sprintf(fileName,"output/hashes/%d.out", child_id);
+        char fileName[1024]; //block file name
+        sprintf(fileName,"output/hashes/%d.out", child_id);
 
         output  = fopen(fileName, "w");
         fprintf(output, "%s", dual_hash_result);//writing hash output to parent
@@ -110,8 +108,8 @@ int main(int argc, char* argv[]) {
         //close files
 
         fclose(cd1);
-         fclose(cd2);
-         fclose(output);
+        fclose(cd2);
+        fclose(output);
     }
     else{//Exit if error happens
         printf("Error");
