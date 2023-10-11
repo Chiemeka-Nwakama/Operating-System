@@ -12,9 +12,8 @@ int main(int argc, char* argv[]) {
         printf("Usage: ./child_process <blocks_folder> <hashes_folder> <N> <child_id>\n");
         return 1;
     }
-  
+     //initalizes variables
     FILE *output;
-
     int n = atoi(argv[3]);
     int child_id = atoi(argv[4]);
     char data_from_hash[1024] = "";
@@ -37,7 +36,13 @@ int main(int argc, char* argv[]) {
             sprintf(blockFileName,"output/hashes/%d.out", child_id);
  
 
+   
             FILE* blockfp = fopen(blockFileName, "w"); //creates second file pointer
+
+            if(blockfp == NULL){
+                perror("No such file");
+                 exit(-1);
+    }
 
             fwrite(data_from_hash, 1, 1024, blockfp); //writes to blockFile
             fclose(blockfp); // close file
@@ -74,10 +79,19 @@ int main(int argc, char* argv[]) {
         char child2[256]; //child file name
          sprintf(child1,"output/hashes/%d.out", 2*child_id+1);
          sprintf(child2,"output/hashes/%d.out", 2*child_id+2);
-
-         FILE* cd1  = fopen(child1, "r");
+        //error check
+         FILE* cd1  = fopen(child1, "r");// make cd1 file pointer
+         if(cd1 == NULL){
+        perror("No such file");
+        exit(-1);
+    }
       
-         FILE* cd2  = fopen(child2, "r");
+         FILE* cd2  = fopen(child2, "r"); //make cd2 file pointer 
+        // error check
+           if(cd2 == NULL){
+        perror("No such file");
+        exit(-1);
+    }
        
         //read files of 2 childern
         fscanf(cd1, "%s", read_child1);//read child 1
@@ -92,6 +106,8 @@ int main(int argc, char* argv[]) {
 
         output  = fopen(fileName, "w");
         fprintf(output, "%s", dual_hash_result);//writing hash output to parent
+
+        //close files
 
         fclose(cd1);
          fclose(cd2);

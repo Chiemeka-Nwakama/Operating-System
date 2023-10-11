@@ -30,6 +30,9 @@ int main(int argc, char* argv[]) {
         exit(-1);
     }
 
+
+    //close file
+
     fclose(file);
 
     // ##### DO NOT REMOVE #####
