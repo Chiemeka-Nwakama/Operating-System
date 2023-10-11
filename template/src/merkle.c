@@ -22,12 +22,12 @@ int main(int argc, char* argv[]) {
 
     if((n & (n - 1)) != 0){
         perror("Invalid amount of data blocks");
-        exit(-1);
+        exit(1);
     }
     FILE *file = fopen(input_file,"r");
     if(file == NULL){
         perror("No such file");
-        exit(-1);
+        exit(1);
     }
 
 
