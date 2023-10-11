@@ -1,5 +1,5 @@
 #include "utils.h"
-
+#include "math.h"
 // Create N files and distribute the data from the input file evenly among them
 // See section 3.1 of the project writeup for important implementation details
 void partition_file_data(char *input_file, int n, char *blocks_folder) {
@@ -19,9 +19,10 @@ void partition_file_data(char *input_file, int n, char *blocks_folder) {
         if(i == n-1){
             firstOrLast = last_file; //makes bytes = to last files bytes
         }
+         
 
-        char fileName[7];
-        char buffer[firstOrLast];
+        char fileName[20]; // allocates buffer for fileName
+        char buffer[firstOrLast]; //allocates 1024 for char buffer
         sprintf(fileName, "%s/%d.txt",blocks_folder, i); //create char array for filename of n.txt
         FILE* fp2 = fopen(fileName, "w"); //creates second file pointer creates N.txt
         size_t bytesRead = fread(buffer, 1, sizeof(buffer), fp); //reads the bytes from input_file to put in the partition

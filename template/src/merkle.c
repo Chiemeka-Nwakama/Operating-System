@@ -42,12 +42,18 @@ int main(int argc, char* argv[]) {
     // TODO: Start the recursive merkle tree computation by spawning first child process (root)
     pid_t pid;
 	pid = fork();
-	execl("./child_process","./child_process", blocks_folder, hashes_folder,n,0,NULL);
+    if(pid == 0){
+        execl("./child_process","./child_process", blocks_folder, hashes_folder,argv[2],"0",NULL);
+    }
+   
+  
     wait(NULL);
+  
 
     // ##### DO NOT REMOVE #####
     #ifndef TEST_INTERMEDIATE
         // Visually display the merkle tree using the output in the hashes_folder
+  
         print_merkle_tree(visualization_file, hashes_folder, n);
     #endif
 

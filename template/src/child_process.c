@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
         printf("Usage: ./child_process <blocks_folder> <hashes_folder> <N> <child_id>\n");
         return 1;
     }
+  
     FILE *output;
 
     int n = atoi(argv[3]);
@@ -24,12 +25,20 @@ int main(int argc, char* argv[]) {
     // TODO: If the current process is a leaf process, read in the associated block file 
     // and compute the hash of the block.
     pid_t pid;
+  
     if(child_id >= n-1 && child_id <= 2*n-2){
-            hash_data_block(data_from_hash, argv[4]);//computes hash of the block 
+       
+            char buff[10];
+            sprintf(buff, "%s/%d.txt", argv[1], child_id-n+1);
+         
+            hash_data_block(data_from_hash, buff);//computes hash of the block 
+    
             char blockFileName[1024]; //block file name
-            sprintf(blockFileName,"output/hashes/%d.out", n);
+            sprintf(blockFileName,"output/hashes/%d.out", child_id);
+ 
 
             FILE* blockfp = fopen(blockFileName, "w"); //creates second file pointer
+
             fwrite(data_from_hash, 1, 1024, blockfp); //writes to blockFile
             fclose(blockfp); // close file
 
@@ -38,27 +47,55 @@ int main(int argc, char* argv[]) {
     
     // TODO: If the current process is not a leaf process, spawn two child processes using  
     // exec() and ./child_process. 
-    else if(child_id <= n-1){
+    else if(child_id < n-1){
+        
+         char c1[50];
+         sprintf(c1, "%d", 2*child_id+1);
+         char c2[50];
+        sprintf(c2, "%d", 2*child_id+2);
         pid = fork();
-        execl(argv[0], 2*child_id+1, NULL);//Spawn child 1
-        pid = fork();
-        execl(argv[0], 2*child_id+2, NULL);//Spawn child 2
+        if(pid == 0){
+               execl(argv[0], argv[0], argv[1], argv[2], argv[3], c1, NULL);//Spawn child 1
 
+        }
+     
+        pid = fork();
+        if(pid == 0){
+        execl(argv[0], argv[0], argv[1], argv[2], argv[3], c2, NULL);//Spawn child 2
+        }
+        
         // TODO: Wait for the two child processes to finish
+        wait(NULL);
         wait(NULL);
 
         // TODO: Retrieve the two hashes from the two child processes from output/hashes/
         // and compute and output the hash of the concatenation of the two hashes.
+        char child1[256]; //child file name
+        char child2[256]; //child file name
+         sprintf(child1,"output/hashes/%d.out", 2*child_id+1);
+         sprintf(child2,"output/hashes/%d.out", 2*child_id+2);
 
+         FILE* cd1  = fopen(child1, "r");
+      
+         FILE* cd2  = fopen(child2, "r");
+       
         //read files of 2 childern
-        fscanf(2*child_id+1, "%s", read_child1);//read child 1
-        fscanf(2*child_id+2, "%s", read_child2);//read child 2
+        fscanf(cd1, "%s", read_child1);//read child 1
+        fscanf(cd2, "%s", read_child2);//read child 2
         
         //using files call compute dual hash
         compute_dual_hash(dual_hash_result, read_child1, read_child2);
 
         //store results into current nodes of output file
-        fprintf(child_id, "%s", dual_hash_result);//writing hash output to parent
+         char fileName[1024]; //block file name
+         sprintf(fileName,"output/hashes/%d.out", child_id);
+
+        output  = fopen(fileName, "w");
+        fprintf(output, "%s", dual_hash_result);//writing hash output to parent
+
+        fclose(cd1);
+         fclose(cd2);
+         fclose(output);
     }
     else{//Exit if error happens
         printf("Error");
