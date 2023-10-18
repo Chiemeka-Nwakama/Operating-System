@@ -23,12 +23,30 @@ void redirection(char **dup_list, int size, char* root_dir){
 void create_symlinks(char **dup_list, char **retain_list, int size) {
     //TODO(): create symbolic link at the location of deleted duplicate file
     //TODO(): dup_list[i] will be the symbolic link for retain_list[i]
+    for(int i = 0; i < size; i++){
+        if(symlink(dup_list[i], retain_list[i]) != 0){ // symbolic link
+        fprintf(stderr, "Unable to create sym link\n");
+        exit(-1);
+        }
+    }
 
 }
 
 void delete_duplicate_files(char **dup_list, int size) {
     //TODO(): delete duplicate files, each element in dup_list is the path of the duplicate file
-
+    for(int i = 0; i < size; i++){
+        pid_t pid = fork();
+        if (pid == 0) {
+            char *argv[] = {"rm", "-rf", dup_list[i], NULL};
+            if (execvp(*argv, argv) < 0) {
+               printf("ERROR: exec failed\n");
+               exit(1);
+            }
+            exit(0);
+       } else {
+        wait(NULL);
+        }
+    }
 }
 
 // ./root_directories <directory>
