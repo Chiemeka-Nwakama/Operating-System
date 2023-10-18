@@ -5,16 +5,54 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "../include/utils.h"
+#include <sys/stat.h> //had to add this for PERM to be defined
 
 #define WRITE (O_WRONLY | O_CREAT | O_TRUNC)
 #define PERM (S_IRUSR | S_IWUSR)
 char *output_file_folder = "output/final_submission/";
 
 void redirection(char **dup_list, int size, char* root_dir){
+    int fd = open(output_file_folder, WRITE, PERM); //opens outputfile folder and store file descriptor
+
+        if (fd == -1) { // error check if the file doesnt exist
+        perror("open");
+        exit(1);
+    }
+
     // TODO(overview): redirect standard output to an output file in output_file_folder("output/final_submission/")
+    int TEMP_STDOUT_FILENO = dup(STDOUT_FILENO);  //copies the file descripter of STDOUT and stores as may want to restore it later
+    dup2(fd, STDOUT_FILENO); //copies the fd of our file folder into the STDOUT_FILENO file descriptor redirecting  STDOUT to our file
+
     // TODO(step1): determine the filename based on root_dir. e.g. if root_dir is "./root_directories/root1", the output file's name should be "root1.txt"
+    char fileName[100];
+    fileName[0] = '\0'; //intially have the null terminator as the first character
+    for(int i = strlen(root_dir)-1; i >-1; i--){
+        if(strcmp("/", root_dir[i])){ //if we find a / we break out of the loop
+            break;
+        }
+        char *currFilename = fileName;
+        sprintf(fileName, "%c%s", root_dir[i],currFilename); //puts the new charcter in front of previous characters since we are going backward through char array until we find a /
+    }
+    char *currFilename = fileName;
+    sprintf(fileName, "%s%s%c", currFilename, ".txt", '\0'); 
+    printf("%s", fileName); //prints new file
+    fflush(stdout); //forces printf to stop buffering and print the new file
+
+  
+
 
     //TODO(step2): redirect standard output to output file (output/final_submission/root*.txt)
+    char output_file[100];
+    sprintf(output_file, "%s/", root_dir); //put root director plus/ for directory for output file
+    strcat(output_file, fileName); // combines the file name with the dir to the file
+    int outFileFd = open(output_file, WRITE, PERM); //opens outputfile folder and store file descriptor
+
+        if (outFileFd == -1) { // error check if the file doesnt exist
+        perror("open");
+        exit(1);
+    }
+
+    dup2(outFileFd, STDOUT_FILENO); //redirect std out to output file
 
     //TODO(step3): read the content each symbolic link in dup_list, write the path as well as the content of symbolic link to output file(as shown in expected)
 
