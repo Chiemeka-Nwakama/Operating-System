@@ -55,6 +55,30 @@ void redirection(char **dup_list, int size, char* root_dir){
     dup2(outFileFd, STDOUT_FILENO); //redirect std out to output file
 
     //TODO(step3): read the content each symbolic link in dup_list, write the path as well as the content of symbolic link to output file(as shown in expected)
+    int M = sizeof(dup_list) / sizeof(dup_list[0]); //gets how many rows
+    int N = sizeof(dup_list[0]) / sizeof(dup_list[0][0]); // gets how many columns
+    
+    for(int i = 0; i < M; i++){
+        for(int j = 0; j < N; j++){
+            FILE* symLinkPtr = fopen(dup_list[i][j], "r");
+             if (symLinkPtr == NULL) { //error check
+              printf("Failed to open the file.\n");
+             }
+                // gets the size of the file
+            fseek(symLinkPtr, 0, SEEK_END); //puts pointers at end of file
+            int file_size = ftell(symLinkPtr); //gets size of file
+            fseek(symLinkPtr, 0, SEEK_SET); //puts pointers at beginning of file
+            char buffer[file_size]; //create buffer
+            fread(buffer, 1, file_size, symLinkPtr); // reads the content from symlink into buffer
+            printf("%s : %s\n", dup_list[i][j], buffer); //prints file path from dup_list and buffer to outfile (redirected)
+            fflush(stdout); //flushe to force printf to stop buffering and to do it right away
+            fclose(symLinkPtr); // closes symlink file
+
+        }
+    }
+    close(outFilefd);
+    
+
 
 }
 
