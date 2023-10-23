@@ -59,73 +59,51 @@ void setup_output_directory(char *root_folder) {
 }
 
 void redirection(char **dup_list, int size, char* root_dir){
-    int fd = open(output_file_folder, WRITE, PERM); //opens outputfile folder and store file descriptor
 
-        if (fd == -1) { // error check if the file doesnt exist
-        perror("open");
-        exit(1);
-    }
 
     // TODO(overview): redirect standard output to an output file in output_file_folder("output/final_submission/")
-    int TEMP_STDOUT_FILENO = dup(STDOUT_FILENO);  //copies the file descripter of STDOUT and stores as may want to restore it later
-    dup2(fd, STDOUT_FILENO); //copies the fd of our file folder into the STDOUT_FILENO file descriptor redirecting  STDOUT to our file
+
 
     // TODO(step1): determine the filename based on root_dir. e.g. if root_dir is "./root_directories/root1", the output file's name should be "root1.txt"
-    char fileName[100];
-    fileName[0] = '\0'; //intially have the null terminator as the first character
-    for(int i = strlen(root_dir)-1; i >-1; i--){
-        if(strcmp("/", root_dir[i])){ //if we find a / we break out of the loop
-            break;
-        }
-        char *currFilename = fileName;
-        sprintf(fileName, "%c%s", root_dir[i],currFilename); //puts the new charcter in front of previous characters since we are going backward through char array until we find a /
-    }
-    char *currFilename = fileName;
-    sprintf(fileName, "%s%s%c", currFilename, ".txt", '\0'); 
-    printf("%s", fileName); //prints new file
-    fflush(stdout); //forces printf to stop buffering and print the new file
+    char file[100]; //buffer for file with rootdirect and filename.txt
+    sprintf(file, "%s/%s.txt",output_file_folder, root_dir); //
+    int fd = open(file, WRITE, PERM); //opens file and stores file descriptor
 
-  
+    if (fd == -1) { // error check if the file doesnt exist
+        error("open");
+        exit(1);
+    }
 
 
     //TODO(step2): redirect standard output to output file (output/final_submission/root*.txt)
-    char output_file[100];
-    sprintf(output_file, "%s/", root_dir); //put root director plus/ for directory for output file
-    strcat(output_file, fileName); // combines the file name with the dir to the file
-    int outFileFd = open(output_file, WRITE, PERM); //opens outputfile folder and store file descriptor
 
-        if (outFileFd == -1) { // error check if the file doesnt exist
-        perror("open");
-        exit(1);
-    }
+    dup2(fd, STDOUT_FILENO); //copies the fd of our file folder into the STDOUT_FILENO file descriptor redirecting  STDOUT to our file
+    close(fd);
+   
 
-    dup2(outFileFd, STDOUT_FILENO); //redirect std out to output file
 
     //TODO(step3): read the content each symbolic link in dup_list, write the path as well as the content of symbolic link to output file(as shown in expected)
 
 
     
     for(int i = 0; i < size; i++){ //i is less than length of duplist
-        FILE* symLinkPtr = fopen(dup_list[i], "r");
-        if (symLinkPtr == NULL) { //error check
-            printf("Failed to open the file.\n");
-            }
-        // gets the size of the file
-        fseek(symLinkPtr, 0, SEEK_END); //puts pointers at end of file
-        int file_size = ftell(symLinkPtr); //gets size of file
-        fseek(symLinkPtr, 0, SEEK_SET); //puts pointers at beginning of file
-        char buffer[file_size]; //create buffer
-        fread(buffer, 1, file_size, symLinkPtr); // reads the content from symlink into buffer
-        printf("%s : %s\n", dup_list[i], buffer); //prints file path from dup_list and buffer to outfile (redirected)
-        fflush(stdout); //flushe to force printf to stop buffering and to do it right away
-        fclose(symLinkPtr); // closes symlink file
+        char buffer[1024]; //create buffer
+
+        ssize_t lin = readlink(dup_list[i], buffer, sizeof(buffer)-1); //Reads sym link and stores in a buffer leaves room for end character
+        sprintf(buffer, "%s%c", buffer, '\0'); //adds end character so printf knows when to stop
+        if(lin != -1){ // if symlink is read correctly
+              printf("%s%c" buffer); //prints file path from dup_list and buffer to file (redirected)
+              fflush(stdout); //flushe to force printf to stop buffering and to do it right away
+        
+
 
         }
-    }
-    close(outFilefd);
+        
+      
+        }
     
-
-
+    close(file); // closes file
+    
 }
 
 void create_symlinks(char **dup_list, char **retain_list, int size) {
@@ -201,4 +179,5 @@ int main(int argc, char* argv[]) {
 
     //TODO(step5): free any arrays that are allocated using malloc!!
 
+    }
 }
