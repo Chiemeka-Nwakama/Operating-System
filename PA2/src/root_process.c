@@ -11,6 +11,53 @@
 #define PERM (S_IRUSR | S_IWUSR)
 char *output_file_folder = "output/final_submission/";
 
+void setup_output_directory(char *root_folder) {
+    // Remove output directory
+    pid_t pid = fork();
+    if (pid == 0) {
+        char *argv[] = {"rm", "-rf", "./output/", NULL};
+        if (execvp(*argv, argv) < 0) {
+            printf("ERROR: exec failed\n");
+            exit(1);
+        }
+        exit(0);
+    } else {
+        wait(NULL);
+    }
+
+    sleep(1);
+
+    // Creating output directory
+    if (mkdir("output", 0777) < 0) {
+        printf("ERROR: mkdir output failed\n");
+        exit(1);
+    }
+
+    sleep(1);
+
+    // Creating root directory
+    if (mkdir("output/inter_submission", 0777) < 0) {
+        printf("ERROR: mkdir output/blocks failed\n");
+        exit(1);
+    }
+    
+    sleep(1);
+    
+    if (mkdir("output/final_submission", 0777) < 0) {
+        printf("ERROR: mkdir output/blocks failed\n");
+        exit(1);
+    }
+    
+    sleep(1);
+    
+    // Creating root directory
+    if (mkdir(root_folder, 0777) < 0) {
+        printf("ERROR: mkdir output/blocks failed\n");
+        exit(1);
+    }
+
+}
+
 void redirection(char **dup_list, int size, char* root_dir){
     int fd = open(output_file_folder, WRITE, PERM); //opens outputfile folder and store file descriptor
 
@@ -131,7 +178,17 @@ int main(int argc, char* argv[]) {
     //TODO(step2): fork() child process & read data from pipe to all_filepath_hashvalue
     pid_t pid;
     pid = fork();
-
+    if(pid != 0){
+	close(pi[1]);
+	char buf2[25];
+	while(read(pipe[0], buf2, 25)!=0){
+		strcat(all_filepath_hashvalue,buf2);
+		strcat(all_filepath_hashvalue," ");
+	} else {
+	char buf[25];
+	sprintf(buf,"%d",pipe[1]);
+	execl("./nonleaf_process","./nonleaf_process", root_directory, buf,NULL);
+	}
     //TODO(step3): malloc dup_list and retain list & use parse_hash() in utils.c to parse all_filepath_hashvalue
     // dup_list: list of paths of duplicate files. We need to delete the files and create symbolic links at the location
     // retain_list: list of paths of unique files. We will create symbolic links for those files
