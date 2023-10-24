@@ -21,17 +21,17 @@ int main(int argc, char* argv[]) {
 
     //TODO(step2): malloc buffer for gathering all data transferred from child process as in root_process.c
     char *child_data = (char *)malloc(sizeof(char) * strlen(pipe_write_end));
-    char pipe_data[1024] = "";
+    char pipe_data[1024];
 
     //TODO(step3): open directory: this is done in traverse directory
     DIR *dir;
     struct dirent *entry;
     pid_t pid;
-    char current_dir[1024] = "";
+    char current_dir[1024];
     pid = fork();
     int fd[2];
     int ret = pipe(fd);
-    int buf[100] = "";
+    char buf[100];
     int nbytes = 0;
     char data_from_child;
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
         }
 
     if(ret == -1){
-        preintf("Error creating pipe...\n");
+        printf("Error creating pipe...\n");
         exit(-1);
     }
 

@@ -101,7 +101,7 @@ void redirection(char **dup_list, int size, char* root_dir){
       
         }
     
-    close(file); // closes file
+    close(fd); // closes file
     
 }
 
@@ -163,6 +163,7 @@ int main(int argc, char* argv[]) {
 		strcat(all_filepath_hashvalue," ");
 	}} else{ //runs if child process
 	char buf[25];
+ 
 	sprintf(buf,"%d",pipe[1]);
 	execl("./nonleaf_process","./nonleaf_process", root_directory, buf,NULL);
 	}
