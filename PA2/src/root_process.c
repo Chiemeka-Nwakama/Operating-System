@@ -62,11 +62,10 @@ void redirection(char **dup_list, int size, char* root_dir){
 
 
     // TODO(overview): redirect standard output to an output file in output_file_folder("output/final_submission/")
-
-
+    setup_output_directory(output_file_folder);
     // TODO(step1): determine the filename based on root_dir. e.g. if root_dir is "./root_directories/root1", the output file's name should be "root1.txt"
     char file[100]; //buffer for file with rootdirect and filename.txt
-    sprintf(file, "%s/%s.txt",output_file_folder, root_dir); //
+    sprintf(file, "%s%s.txt",output_file_folder, root_dir); //
     int fd = open(file, WRITE, PERM); //opens file and stores file descriptor
 
     if (fd == -1) { // error check if the file doesnt exist
@@ -92,7 +91,7 @@ void redirection(char **dup_list, int size, char* root_dir){
         ssize_t lin = readlink(dup_list[i], buffer, sizeof(buffer)-1); //Reads sym link and stores in a buffer leaves room for end character
         sprintf(buffer, "%s%c", buffer, '\0'); //adds end character so printf knows when to stop
         if(lin != -1){ // if symlink is read correctly
-              printf("%s%c" buffer); //prints file path from dup_list and buffer to file (redirected)
+              printf("%s", buffer); //prints file path from dup_list and buffer to file (redirected)
               fflush(stdout); //flushe to force printf to stop buffering and to do it right away
         
 
@@ -156,13 +155,13 @@ int main(int argc, char* argv[]) {
     //TODO(step2): fork() child process & read data from pipe to all_filepath_hashvalue
     pid_t pid;
     pid = fork();
-    if(pid != 0){
-	close(pi[1]);
+    if(pid != 0){ // runs if parent process
+	close(pipe[1]);
 	char buf2[25];
 	while(read(pipe[0], buf2, 25)!=0){
 		strcat(all_filepath_hashvalue,buf2);
 		strcat(all_filepath_hashvalue," ");
-	} else {
+	}} else{ //runs if child process
 	char buf[25];
 	sprintf(buf,"%d",pipe[1]);
 	execl("./nonleaf_process","./nonleaf_process", root_directory, buf,NULL);
@@ -170,14 +169,31 @@ int main(int argc, char* argv[]) {
     //TODO(step3): malloc dup_list and retain list & use parse_hash() in utils.c to parse all_filepath_hashvalue
     // dup_list: list of paths of duplicate files. We need to delete the files and create symbolic links at the location
     // retain_list: list of paths of unique files. We will create symbolic links for those files
+    char** dup_list = (char*) malloc(1024); //mallocs duplist
+    char** retain_list = (char*)malloc(1024); // mallocs retain
+    
+
+    int size = parse_hash(all_filepath_hashvalue, dup_list, retain_list);
 
 
+    
     //TODO(step4): implement the functions
     delete_duplicate_files(dup_list,size);
     create_symlinks(dup_list, retain_list, size);
     redirection(dup_list, size, argv[1]);
 
     //TODO(step5): free any arrays that are allocated using malloc!!
+    for(int i = 0; i < size; i++){
+        free(dup_list[i]);
+        free(retain_list[i]);
+        dup_list[i] = NULL;
+        retain_list[i] = NULL;
 
     }
-}
+
+    free(dup_list);
+    free(retain_list);
+    dup_list= NULL;
+    retain_list = NULL;
+
+    }
