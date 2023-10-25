@@ -93,6 +93,7 @@ int main(int argc, char* argv[]) {
     //TODO(overview): fork the first non_leaf process associated with root directory("./root_directories/root*")
 
     char* root_directory = argv[1];
+    
     char all_filepath_hashvalue[4098]; //buffer for gathering all data transferred from child process
     memset(all_filepath_hashvalue, 0, sizeof(all_filepath_hashvalue));// clean the buffer
 
@@ -105,7 +106,7 @@ int main(int argc, char* argv[]) {
     if(pid != 0){ // runs if parent process
   
 	close(pi[1]);
-	char buf2[25];
+	char buf2[1024];
 	memset(buf2, 0, sizeof(buf2));
    
 	//read(pi[0],all_filepath_hashvalue, 4098);
@@ -113,7 +114,7 @@ int main(int argc, char* argv[]) {
 		printf("%s,you're better than i thought\n",buf2);
 		strcat(all_filepath_hashvalue,buf2);
 		strcat(all_filepath_hashvalue," ");
-		memset(buf2, 0, sizeof(buf2));
+	
 	}
 	close(pi[0]);
      } else{ //runs if child process

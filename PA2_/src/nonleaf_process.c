@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
     }
 
     while((entry = readdir(dir)) != NULL){
+       
         if(entry == NULL){
             perror("readdir");
             exit(1);
@@ -63,7 +64,7 @@ int main(int argc, char* argv[]) {
             int ret = pipe(fd);
             pid = fork();
             if(pid == 0){//child, but parent for the new child in next nonleaf_process run
-                //close(fd[0]);//close read end
+                close(fd[0]);//close read end
 
                 getcwd(current_dir, 1024);
                 sprintf(child_data, "%s", current_dir);
@@ -80,8 +81,9 @@ int main(int argc, char* argv[]) {
 
     //TODO(step5): read from pipe constructed for child process and write to pipe constructed for parent process
             else if (pid > 0){//parent will read from child that is written above.
-                wait(NULL);
                 close(fd[1]);//close write end
+                wait(NULL);
+                
 
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
@@ -98,7 +100,7 @@ int main(int argc, char* argv[]) {
             pid = fork();
             if(pid == 0){
         //          print entry name to file
-                //close(fd[0]);//close read end
+                close(fd[0]);//close read end
 
                 getcwd(current_dir, 1024);
                 sprintf(child_data, "%s", current_dir);
@@ -115,14 +117,16 @@ int main(int argc, char* argv[]) {
                 execl("./leaf_process","./leaf_process",child_data, str, NULL);
             }
             else if (pid > 0){//parent will read from child that is written above.
+                close(fd[1]);
                 wait(NULL);
-                close(fd[1]);//close write end
+                //close write end
                 printf("hardlink\n");
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
                 }
                 write(pipe_write_end,child_data,sizeof(child_data));
                 close(fd[0]);//close read end
+                 exit(0);
             }
         }
 
