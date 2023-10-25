@@ -58,8 +58,6 @@ int main(int argc, char* argv[]) {
         //TODO(final submission): write the string to pipe
 	write(pipe_write_end, strToPipe, 1024);
 	printf("Hi hello,%s\n",strToPipe);
-        exit(0);
-
     }
     
 

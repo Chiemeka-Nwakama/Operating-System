@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
             int ret = pipe(fd);
             pid = fork();
             if(pid == 0){//child, but parent for the new child in next nonleaf_process run
-                close(fd[0]);//close read end
+                //close(fd[0]);//close read end
 
                 getcwd(current_dir, 1024);
                 sprintf(child_data, "%s", current_dir);
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
             pid = fork();
             if(pid == 0){
         //          print entry name to file
-                close(fd[0]);//close read end
+                //close(fd[0]);//close read end
 
                 getcwd(current_dir, 1024);
                 sprintf(child_data, "%s", current_dir);
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 
                 close(fd[1]);//close write end
                 char str[100];
-		    sprintf(str, "%d", ret);
+		    sprintf(str, "%d", fd[1]);
         //array
                 printf("this is what you're sennding, %s\n",child_data);
                 execl("./leaf_process","./leaf_process",child_data, str, NULL);
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
             else if (pid > 0){//parent will read from child that is written above.
                 wait(NULL);
                 close(fd[1]);//close write end
-
+                printf("hardlink\n");
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
                 }
@@ -134,12 +134,13 @@ int main(int argc, char* argv[]) {
         else{
             int fd[2];
             int ret = pipe(fd);
+            pid = fork();
             if(pid == 0){
                
            
-                //pid = fork();
+                
         //              print entry name to file 
-                close(fd[0]);//close read end
+                //close(fd[0]);//close read end
 
                 getcwd(current_dir, 1024);
                 sprintf(child_data, "%s", current_dir);
@@ -150,14 +151,14 @@ int main(int argc, char* argv[]) {
 
                 close(fd[1]);//close write end
                 char str[100];
-		sprintf(str, "%d", ret);
+		sprintf(str, "%d", fd[1]);
                 execl("./leaf_process","./leaf_process",child_data, str, NULL);
         }
             else if (pid > 0){//parent will read from child that is written above.
 
                 wait(NULL);
                 close(fd[1]);//close write end
-
+                printf("symlink\n");
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
                 }

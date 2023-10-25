@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 	}
 	close(pi[0]);
      } else{ //runs if child process
-     	close(pi[0]);
+     	//close(pi[0]);
 	char buf[25];
 	sprintf(buf,"%d",pi[1]);
 	execl("./nonleaf_process","./nonleaf_process", root_directory, buf,NULL);
