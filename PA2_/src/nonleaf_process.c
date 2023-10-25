@@ -81,9 +81,9 @@ int main(int argc, char* argv[]) {
 
     //TODO(step5): read from pipe constructed for child process and write to pipe constructed for parent process
             else if (pid > 0){//parent will read from child that is written above.
-                close(fd[1]);//close write end
+             //close write end
                 wait(NULL);
-                
+                close(fd[1]);
 
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
@@ -117,8 +117,9 @@ int main(int argc, char* argv[]) {
                 execl("./leaf_process","./leaf_process",child_data, str, NULL);
             }
             else if (pid > 0){//parent will read from child that is written above.
-                close(fd[1]);
+            
                 wait(NULL);
+                close(fd[1]);
                 //close write end
                 printf("hardlink\n");
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
