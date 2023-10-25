@@ -10,7 +10,6 @@ char *output_file_folder = "output/inter_submission/";
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-    	printf("%s %s %s\n",argv[0],argv[1],argv[2]);
         printf("Usage: Inter Submission --> ./leaf_process <file_path> 0\n");
         printf("Usage: Final Submission --> ./leaf_process <file_path> <pipe_write_end>\n");
         return -1;

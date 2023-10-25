@@ -103,13 +103,14 @@ int main(int argc, char* argv[]) {
     pid_t pid;
     pid = fork();
     if(pid != 0){ // runs if parent process
+  
 	close(pi[1]);
 	char buf2[25];
 	memset(buf2, 0, sizeof(buf2));
    
 	//read(pi[0],all_filepath_hashvalue, 4098);
 	while(read(pi[0], buf2, 25)!=0){
-		printf("%s\n",buf2);
+		printf("%s,you're better than i thought\n",buf2);
 		strcat(all_filepath_hashvalue,buf2);
 		strcat(all_filepath_hashvalue," ");
 		memset(buf2, 0, sizeof(buf2));
@@ -127,7 +128,7 @@ int main(int argc, char* argv[]) {
     // retain_list: list of paths of unique files. We will create symbolic links for those files
     char** dup_list = (char**) malloc(sizeof(char*)*10); //mallocs duplist
     char** retain_list = (char**)malloc(sizeof(char*)*10); // mallocs retain
-    printf("%s\n",all_filepath_hashvalue);
+    printf("%s,found me\n",all_filepath_hashvalue);
 
     int size = parse_hash(all_filepath_hashvalue, dup_list, retain_list);
 

@@ -37,17 +37,14 @@ int main(int argc, char* argv[]) {
     dir = opendir(file_path);
     if(dir == NULL){
         perror("readdir");
-        printf("you thought\n");
         exit(1);
     }
 
     while((entry = readdir(dir)) != NULL){
         if(entry == NULL){
             perror("readdir");
-            printf("not here either");
             exit(1);
         }
-        printf("dumb\n");
 
     if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 ){
         continue;
