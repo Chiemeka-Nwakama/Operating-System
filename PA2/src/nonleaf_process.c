@@ -12,15 +12,15 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     char *file_path;
-    char *pipe_write_end;
+    int pipe_write_end;
 
     //TODO(overview): fork the child processes(non-leaf process or leaf process) each associated with items under <directory_path>
     //TODO(step1): get <file_path> <pipe_write_end> from argv[]
     file_path = argv[1];
-    pipe_write_end = argv[2];
+    pipe_write_end = atoi(argv[2]);
 
     //TODO(step2): malloc buffer for gathering all data transferred from child process as in root_process.c
-    char *child_data = (char *)malloc(sizeof(char) * strlen(pipe_write_end));
+    char *child_data = (char *)malloc(sizeof(char) * strlen(file_path));
     char pipe_data[1024];
 
     //TODO(step3): open directory: this is done in traverse directory

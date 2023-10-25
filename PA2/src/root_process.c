@@ -148,23 +148,26 @@ int main(int argc, char* argv[]) {
     char* root_directory = argv[1];
     char all_filepath_hashvalue[4098]; //buffer for gathering all data transferred from child process
     memset(all_filepath_hashvalue, 0, sizeof(all_filepath_hashvalue));// clean the buffer
+    
 
     //TODO(step1): construct pipe
-    int pipe[2];
+    int pi[2];
+    pipe(pi);
 
     //TODO(step2): fork() child process & read data from pipe to all_filepath_hashvalue
     pid_t pid;
     pid = fork();
     if(pid != 0){ // runs if parent process
-	close(pipe[1]);
+	close(pi[1]);
 	char buf2[25];
-	while(read(pipe[0], buf2, 25)!=0){
+	while(read(pi[0], buf2, 25)!=0){
 		strcat(all_filepath_hashvalue,buf2);
 		strcat(all_filepath_hashvalue," ");
-	}} else{ //runs if child process
+	}
+    } else{ //runs if child process
 	char buf[25];
  
-	sprintf(buf,"%d",pipe[1]);
+	sprintf(buf,"%d",pi[1]);
 	execl("./nonleaf_process","./nonleaf_process", root_directory, buf,NULL);
 	}
     //TODO(step3): malloc dup_list and retain list & use parse_hash() in utils.c to parse all_filepath_hashvalue

@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "../include/utils.h"
+#include <sys/wait.h>
 #include <sys/stat.h> //had to add this for PERM to be defined
 
 #define WRITE (O_WRONLY | O_CREAT | O_TRUNC)
@@ -105,6 +106,7 @@ int main(int argc, char* argv[]) {
 	close(pi[1]);
 	char buf2[25];
 	memset(buf2, 0, sizeof(buf2));
+   
 	//read(pi[0],all_filepath_hashvalue, 4098);
 	while(read(pi[0], buf2, 25)!=0){
 		printf("%s\n",buf2);
