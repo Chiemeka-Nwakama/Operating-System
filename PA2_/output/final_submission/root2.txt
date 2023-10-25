@@ -1,0 +1,2 @@
+output/final_submission/root2.txt->sdafjoKDADA
+Processing symbolic link: 0
