@@ -51,6 +51,8 @@ int main(int argc, char* argv[]) {
         
         free(root_directory);
         root_directory = NULL;
+
+        close(pipe_write_end);
         
 
 
