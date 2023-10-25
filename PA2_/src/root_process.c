@@ -110,10 +110,11 @@ int main(int argc, char* argv[]) {
 	memset(buf2, 0, sizeof(buf2));
    
 	//read(pi[0],all_filepath_hashvalue, 4098);
-	while(read(pi[0], buf2, 25)!=0){
-		printf("%s,you're better than i thought\n",buf2);
+	while(read(pi[0], buf2, 250)!=0){
+		
 		strcat(all_filepath_hashvalue,buf2);
 		strcat(all_filepath_hashvalue," ");
+        printf("%s,you're better than i thought\n",all_filepath_hashvalue);
 	
 	}
 	close(pi[0]);

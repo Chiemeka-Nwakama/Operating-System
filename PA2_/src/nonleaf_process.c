@@ -82,13 +82,14 @@ int main(int argc, char* argv[]) {
     //TODO(step5): read from pipe constructed for child process and write to pipe constructed for parent process
             else if (pid > 0){//parent will read from child that is written above.
              //close write end
+              close(fd[1]);
                 wait(NULL);
-                close(fd[1]);
+               
 
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
                 }
-                write(pipe_write_end,child_data,sizeof(child_data));
+                write(pipe_write_end,child_data,strlen(child_data));
                 close(fd[0]);//close read end
             }
         }
@@ -117,15 +118,15 @@ int main(int argc, char* argv[]) {
                 execl("./leaf_process","./leaf_process",child_data, str, NULL);
             }
             else if (pid > 0){//parent will read from child that is written above.
-            
+                 close(fd[1]);
                 wait(NULL);
-                close(fd[1]);
+               
                 //close write end
                 printf("hardlink\n");
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
                 }
-                write(pipe_write_end,child_data,sizeof(child_data));
+                write(pipe_write_end,child_data,strlen(child_data));
                 close(fd[0]);//close read end
                  exit(0);
             }
@@ -138,6 +139,7 @@ int main(int argc, char* argv[]) {
             int ret = pipe(fd);
             pid = fork();
             if(pid == 0){
+                close(fd[0]);//close write end
                
            
                 
@@ -157,14 +159,14 @@ int main(int argc, char* argv[]) {
                 execl("./leaf_process","./leaf_process",child_data, str, NULL);
         }
             else if (pid > 0){//parent will read from child that is written above.
-
-                wait(NULL);
                 close(fd[1]);//close write end
+                wait(NULL);
+            
                 printf("symlink\n");
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
                     strcat(child_data, buf);
                 }
-                write(pipe_write_end,child_data,sizeof(child_data));
+                write(pipe_write_end,child_data,strlen(child_data));
                 close(fd[0]);//close read end
             }
         }
