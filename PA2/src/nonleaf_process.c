@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <dirent.h>
+#include <sys/wait.h>
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
@@ -13,28 +14,24 @@ int main(int argc, char* argv[]) {
     }
     char *file_path;
     int pipe_write_end;
-
+// check all static allocated and memset
     //TODO(overview): fork the child processes(non-leaf process or leaf process) each associated with items under <directory_path>
     //TODO(step1): get <file_path> <pipe_write_end> from argv[]
     file_path = argv[1];
     pipe_write_end = atoi(argv[2]);
-
+    char current_dir[1024];
+    printf("Hi nope, %s\n",file_path);
     //TODO(step2): malloc buffer for gathering all data transferred from child process as in root_process.c
-    char *child_data = (char *)malloc(sizeof(char) * strlen(file_path));
-    char pipe_data[1024];
+    char child_data[4096];
 
     //TODO(step3): open directory: this is done in traverse directory
     DIR *dir;
     struct dirent *entry;
     pid_t pid;
-    char current_dir[1024];
-    pid = fork();
-    int fd[2];
-    int ret = pipe(fd);
+   
+    
     char buf[100];
     int nbytes = 0;
-    char data_from_child;
-
     dir = opendir(file_path);
     if(dir == NULL){
         perror("readdir");
@@ -42,15 +39,11 @@ int main(int argc, char* argv[]) {
     }
 
     while((entry = readdir(dir)) != NULL){
+       
         if(entry == NULL){
             perror("readdir");
             exit(1);
         }
-
-    if(ret == -1){
-        printf("Error creating pipe...\n");
-        exit(-1);
-    }
 
     if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 ){
         continue;
@@ -65,69 +58,113 @@ int main(int argc, char* argv[]) {
 
         // if entry is a directory 
         if(entry->d_type == DT_DIR){
-            
+            int fd[2];
+            pid = fork();
             if(pid == 0){//child, but parent for the new child in next nonleaf_process run
                 close(fd[0]);//close read end
 
-                getcwd(current_dir, 1024);
-                sprintf(pipe_data, "%s", current_dir);
-                strcat(pipe_data, "/");
-                sprintf(pipe_data, "%s", name);
-
-                write(fd[1], pipe_data, strlen(pipe_data));
-
-                close(fd[1]);//close write end
-                execl("./nonleaf_process","./nonleaf_process",child_data, ret, NULL);
+                sprintf(child_data, "%s", file_path);
+                strcat(child_data, "/");
+                sprintf(child_data, "%s", name);
+                char str[100];
+		sprintf(str, "%d", fd[1]);
+                execl("./nonleaf_process","./nonleaf_process",child_data, str, NULL);
             }
 
     //TODO(step5): read from pipe constructed for child process and write to pipe constructed for parent process
             else if (pid > 0){//parent will read from child that is written above.
+             //close write end
+              close(fd[1]);
                 wait(NULL);
-                close(fd[1]);//close write end
+               
 
                 while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
-                    strcat(data_from_child, buf);
+                    strcat(child_data, buf);
                 }
-
+                write(pipe_write_end,child_data,strlen(child_data));
                 close(fd[0]);//close read end
             }
         }
 
         // if entry is a regular file 
         else if(entry->d_type == DT_REG){
+            int fd[2];
+            pid = fork();
+            if(pid == 0){
         //          print entry name to file
                 close(fd[0]);//close read end
 
                 getcwd(current_dir, 1024);
-                sprintf(pipe_data, "%s", current_dir);
-                strcat(pipe_data, "/");
-                sprintf(pipe_data, "%s", name);
+                sprintf(child_data, "%s", current_dir);
+                strcat(child_data, "/");
+                sprintf(child_data, "%s", name);
 
-                write(fd[1], pipe_data, strlen(pipe_data));
+                write(fd[1], child_data, strlen(child_data));
 
                 close(fd[1]);//close write end
-                execl("./leaf_process","./leaf_process",child_data, ret, NULL);
+                char str[100];
+		    sprintf(str, "%d", fd[1]);
+        //array
+                printf("this is what you're sennding, %s\n",child_data);
+                execl("./leaf_process","./leaf_process",child_data, str, NULL);
+            }
+            else if (pid > 0){//parent will read from child that is written above.
+                 close(fd[1]);
+                wait(NULL);
+               memset(child_data, 0, sizeof(child_data));
+                //close write end
+                printf("hardlink\n");
+                while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
+                    strcat(child_data, buf);
+                    memset(buf, 0, sizeof(char) * 100);
+                }
+                write(pipe_write_end,child_data,strlen(child_data));
+                close(fd[0]);//close read end
+            }
         }
 
         // else
         //          if entry is symbolic 
         else{
+            int fd[2];
+            pid = fork();
+            if(pid == 0){
+                close(fd[0]);//close write end
+               
+           
+                
         //              print entry name to file 
-                close(fd[0]);//close read end
+                //close(fd[0]);//close read end
 
                 getcwd(current_dir, 1024);
-                sprintf(pipe_data, "%s", current_dir);
-                strcat(pipe_data, "/");
-                sprintf(pipe_data, "%s", name);
+                sprintf(child_data, "%s", current_dir);
+                strcat(child_data, "/");
+                sprintf(child_data, "%s", name);
 
-                write(fd[1], pipe_data, strlen(pipe_data));
+                write(fd[1], child_data, strlen(child_data));
 
                 close(fd[1]);//close write end
-                execl("./leaf_process","./leaf_process",child_data, ret, NULL);
+                char str[100];
+		sprintf(str, "%d", fd[1]);
+                execl("./leaf_process","./leaf_process",child_data, str, NULL);
+        }
+            else if (pid > 0){//parent will read from child that is written above.
+                close(fd[1]);//close write end
+                wait(NULL);
+            
+                printf("symlink\n");
+               memset(child_data, 0, sizeof(child_data));
+                while((nbytes = read(fd[0], buf, sizeof(char) * 100)) != 0){
+                    strcat(child_data, buf);
+                    memset(buf, 0, sizeof(char) * 100);
+                }
+                write(pipe_write_end,child_data,strlen(child_data));
+                close(fd[0]);//close read end
+            }
         }
     free(name);
+    name = NULL;
     }
 
     closedir(dir);
-    free(child_data);
 }
