@@ -4,55 +4,9 @@
 #include <unistd.h>
 #include "../include/hash.h"
 #include "../include/utils.h"
+#include <sys/wait.h>
 
 char *output_file_folder = "output/inter_submission/";
-
-void setup_output_directory(char *root_folder) {
-    // Remove output directory
-    pid_t pid = fork();
-    if (pid == 0) {
-        char *argv[] = {"rm", "-rf", "./output/", NULL};
-        if (execvp(*argv, argv) < 0) {
-            printf("ERROR: exec failed\n");
-            exit(1);
-        }
-        exit(0);
-    } else {
-        wait(NULL);
-    }
-
-    sleep(1);
-
-    // Creating output directory
-    if (mkdir("output", 0777) < 0) {
-        printf("ERROR: mkdir output failed\n");
-        exit(1);
-    }
-
-    sleep(1);
-
-    // Creating root directory
-    if (mkdir("output/inter_submission", 0777) < 0) {
-        printf("ERROR: mkdir output/blocks failed\n");
-        exit(1);
-    }
-    
-    sleep(1);
-    
-    if (mkdir("output/final_submission", 0777) < 0) {
-        printf("ERROR: mkdir output/blocks failed\n");
-        exit(1);
-    }
-    
-    sleep(1);
-    
-    // Creating root directory
-    if (mkdir(root_folder, 0777) < 0) {
-        printf("ERROR: mkdir output/blocks failed\n");
-        exit(1);
-    }
-
-}
 
 int main(int argc, char* argv[]) {
     if (argc != 3) {
@@ -82,7 +36,6 @@ int main(int argc, char* argv[]) {
         char location[1024] = "";
         //file_root[strlen(file_root)-1] = '\0';
         sprintf(location, "%s%s", output_file_folder, root_directory);
-        setup_output_directory(location);
         char outputFilePath[1024]  = "";
         sprintf(outputFilePath, "%s%s%s", output_file_folder, root_directory,file_name);
         //TODO(step4): create and write to file, and then close file
@@ -95,18 +48,19 @@ int main(int argc, char* argv[]) {
         fwrite(strToPipe, 1, strlen(strToPipe), output_file); //writes to blockFile
         fclose(output_file); // close file
         //TODO(step5): free any arrays that are allocated using malloc!! Free the string returned from extract_root_directory()!! It is allocated using malloc in extract_root_directory()
+        
         free(root_directory);
-        for(int i = 0; i < 1024; i++){
-        root_directory[i] = NULL;
-        }
+        root_directory = NULL;
 
+        close(pipe_write_end);
+        
 
 
     }else{
         //TODO(final submission): write the string to pipe
 	write(pipe_write_end, strToPipe, 1024);
-        exit(0);
-
+	printf("Hi hello,%s\n",strToPipe);
+    close(pipe_write_end);
     }
     
 
