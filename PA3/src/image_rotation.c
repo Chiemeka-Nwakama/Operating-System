@@ -21,7 +21,7 @@ int next_remove = 0;
 //How will you update and utilize the current number of requests in the request queue?
 int queue_size = 0;
 //How will you track the p_thread's that you create for workers?
-pthread_t* worker_threads;
+//pthread_t* worker_threads;
 //How will you know where to insert the next request received into the request queue?
 int queue_index = 0; 
 
@@ -139,8 +139,8 @@ void * worker(void *args)
 
 /*
     Main:
-        Get the data you need from the command line argument 
-        Open the logfile
+        x Get the data you need from the command line argument 
+        x Open the logfile
         Create the threads needed
         Join on the created threads
         Clean any data if needed. 
@@ -152,19 +152,27 @@ int main(int argc, char* argv[])
 {
     if(argc != 4)
     {
-        fprintf(stderr, "Usage: File Path to image dirctory, File path to output dirctory, number of worker thread, and Rotation angle\n");
+        printf("Usage: File Path to image dirctory, File path to output dirctory, number of worker thread, and Rotation angle\n");
+        exit(1);
     }
     
     char* input_directory = argv[1];
     char* output_directory = argv[2];
-    num_worker_threads = atoi(argv[3]);
+    int num_worker_threads = atoi(argv[3]);
     int rotation_angle = atoi(argv[4]);
  
     char full_dir[4096];
-    log_file = fopen("logfile.txt","w");
+    log_file = fopen("request_log.txt","w");
     if (log_file == NULL) {
         perror("Failed to open request_log file");
-        return 1;
+        exit(1);
+    }
+ 
+    pthread_t worker_threads[num_worker_threads];
+    Args par_args[num_worker_threads];
+ 
+    for (int i = 0; i < num_worker_threads; i++){
+        pthread_create(&worker_threads[i], NULL, worker, &par_args[i]);
     }
 
 }
