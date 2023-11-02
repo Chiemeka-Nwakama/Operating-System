@@ -2,17 +2,26 @@
  
  
 //Global integer to indicate the length of the queue??
-int num_worker_threads; //Global integer to indicate the number of worker threads
-FILE* log_file; //Global file pointer for writing to log file in worker??
-pthread_t worker_threads[1024];//Might be helpful to track the ID's of your threads in a global array
+int queue_length;
+//Global integer to indicate the number of worker threads
+int num_worker_threads; 
+//Global file pointer for writing to log file in worker??
+FILE* log_file; 
+//Might be helpful to track the ID's of your threads in a global array
+pthread_t worker_threads[1024];
 //What kind of locks will you need to make everything thread safe? [Hint you need multiple]
 //What kind of CVs will you need  (i.e. queue full, queue empty) [Hint you need multiple]
+pthread_cond_t queue_empty;
+pthread_cond_t queue_full;
 //How will you track the requests globally between threads? How will you ensure this is thread safe?
+int request_queue[1024];
 //How will you track which index in the request queue to remove next?
+int next_remove = 1023;
 //How will you update and utilize the current number of requests in the request queue?
+int queue_size = 0;
 //How will you track the p_thread's that you create for workers?
-int queue_index = 0; //How will you know where to insert the next request received into the request queue?
-
+//How will you know where to insert the next request received into the request queue?
+int queue_index = 0; 
 
 /*
     The Function takes:
