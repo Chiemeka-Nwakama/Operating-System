@@ -162,5 +162,9 @@ int main(int argc, char* argv[])
  
     char full_dir[4096];
     log_file = fopen("logfile.txt","w");
+    if (log_file == NULL) {
+        perror("Failed to open request_log file");
+        return 1;
+    }
 
 }
