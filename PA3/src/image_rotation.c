@@ -57,6 +57,7 @@ void log_pretty_print(FILE* to_write, int threadId, int requestNumber, char * fi
 
 void *processing(void *args)
 {
+    pthread_cond_signal
 
 
 }
@@ -91,6 +92,8 @@ void * worker(void *args)
 
         */
 
+ 
+
        // uint8_t* image_result = stbi_load("??????","?????", "?????", "???????",  CHANNEL_NUM);
         
 
@@ -108,7 +111,12 @@ void * worker(void *args)
         
         */
         //linear_to_image("??????", "????", "????", "????");
-        
+
+    
+    // int* image_matrix = create_image_matrix();  
+    // linear_to_image(result_matrix, img_matrix, width, height);
+
+     
 
         ////TODO: you should be ready to call flip_left_to_right or flip_upside_down depends on the angle(Should just be 180 or 270)
         //both take image matrix from linear_to_image, and result_matrix to store data, and width and height.
