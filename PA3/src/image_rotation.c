@@ -45,6 +45,8 @@ void log_pretty_print(FILE* to_write, int threadId, int requestNumber, char * fi
     1: The processing function takes a void* argument called args. It is expected to be a pointer to a structure processing_args_t 
     that contains information necessary for processing.
 
+
+
     2: The processing thread need to traverse a given dictionary and add its files into the shared queue while maintaining synchronization using lock and unlock. 
 
     3: The processing thread should pthread_cond_signal/broadcast once it finish the traversing to wake the worker up from their wait.
@@ -57,7 +59,19 @@ void log_pretty_print(FILE* to_write, int threadId, int requestNumber, char * fi
 
 void *processing(void *args)
 {
+    processing_args_t *procArgs  = (processing_args_t *)args;
+    const char* path = procArgs -> directory_path[i];
+    DIR *dir = opendir(path);
+     if(dir == NULL){
+        perror("opendir");
+        exit(1);
+    }
+
+     
+    
+
     pthread_cond_signal
+
 
 
 }

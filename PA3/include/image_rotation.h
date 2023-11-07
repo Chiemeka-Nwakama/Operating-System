@@ -43,11 +43,18 @@
 typedef struct request_queue
 {
     //what data do you need here?
+    int* angle_rot;
+    **char imgpaths;
+
 }request_t; 
 
 typedef struct processing_args
 {
+  
    //what data do you need here?
+    char* dirPath;
+    int* num_worker;
+    int* angle_rot;
 } processing_args_t;
 
 
