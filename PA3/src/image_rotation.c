@@ -60,14 +60,80 @@ void log_pretty_print(FILE* to_write, int threadId, int requestNumber, char * fi
 void *processing(void *args)
 {
     processing_args_t *procArgs  = (processing_args_t *)args;
-    const char* path = procArgs -> directory_path[i];
-    DIR *dir = opendir(path);
+    const char* dirname = procArgs -> dirPath;
+    DIR *dir = opendir(dirname);
      if(dir == NULL){
         perror("opendir");
         exit(1);
     }
+    // Traverse through all entries
+    struct dirent *entry;
 
+    
+    while((entry = readdir(dir)) != NULL){
+        
+        // skip . and ..
+   
+
+        
+      
+        // concatenate dirname with the directory entry
+        // use malloc
+        char* newEntry = entry->d_name;
+
+        if(strcmp(newEntry, ".") == 0 ||strcmp(newEntry, "..")  == 0){
+            continue;
+        }
+
+        char* newDir = malloc(strlen(newEntry) + strlen(dirname) + 2);
+
+        char absPathBuf[1024];
+        sprintf(newDir, "%s", dirname);
+        
      
+
+        strcat(newDir, "/");
+
+        strcat(newDir, entry->d_name);
+     
+        if(entry->d_type == DT_DIR){
+
+            
+            getcwd(absPathBuf, 1024);
+            printf("%s/%s\n", absPathBuf, newDir);
+         
+            traverseDirectory(newDir);
+
+        }
+        else if(entry->d_type == DT_REG){
+            getcwd(absPathBuf, 1024);
+            printf("%s/%s\n", absPathBuf, newDir);
+    
+        }
+        else{
+            getcwd(absPathBuf, 1024);
+            printf("Symlink Found: %s/%s\n", absPathBuf, newDir);
+    
+      
+        }
+        // if entry is a directory
+        //          print entry name
+        //          You may have to get the absolute prectory(newDir);ath
+        //          recursively call traverseDirectory
+
+        // if entry is a regular file
+        //          print entry name
+
+        // else
+        //          if entry is symbolic
+        //              print entry name
+        free(newDir);   
+    }
+    // close current directory
+  
+    closedir(dir);
+}
+
     
 
     pthread_cond_signal
