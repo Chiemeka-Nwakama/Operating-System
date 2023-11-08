@@ -52,8 +52,7 @@ void log_pretty_print(FILE* to_write, int threadId, int requestNumber, char * fi
     5: The processing thread will cross check if the condition from step 4 is met and it will signal to the worker to exit and it will exit.
 */
 
-void *processing(void *args)
-{
+void *processing(void *args){
     processing_args_t *procArgs  = (processing_args_t *)args;
     const char* dirname = procArgs -> dirPath;
     DIR *dir = opendir(dirname);
@@ -81,8 +80,8 @@ void *processing(void *args)
 
         // store pizza index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
         //pargs -> //maLLOC HERE
-           main_queue[queue_index]->imgpaths[next_pos_for_path] = newEntry;
-           main_queue[queue_index]->angle_rot = procArgs -> rotation_angle
+           main_queue[queue_index].imgpaths[next_pos_for_path] = newEntry;
+           main_queue[queue_index].angle_rot = procArgs -> angle_rot;
            next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
 
 
@@ -113,7 +112,7 @@ void *processing(void *args)
 
         //worker threads
 
-    }
+    
     // close current directory
   
     closedir(dir);
@@ -151,15 +150,15 @@ void * worker(void *args)
 
  
 
-       /uint8_t* image_result = stbi_load(&width,&height, "?????", "???????",  CHANNEL_NUM);
+    //    /uint8_t* image_result = stbi_load(&width,&height, "?????", "???????",  CHANNEL_NUM);
         
 
-        uint8_t **result_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
-        uint8_t** img_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
-        for(int i = 0; i < width; i++){
-            result_matrix[i] = (uint8_t *)malloc(sizeof(uint8_t) * height);
-            img_matrix[i] = (uint8_t *)malloc(sizeof(uint8_t) * height);
-        }
+    //     uint8_t **result_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
+    //     uint8_t** img_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
+    //     for(int i = 0; i < width; i++){
+    //         result_matrix[i] = (uint8_t *)malloc(sizeof(uint8_t) * height);
+    //         img_matrix[i] = (uint8_t *)malloc(sizeof(uint8_t) * height);
+    //     }
         /*
         linear_to_image takes: 
             The image_result matrix from stbi_load
@@ -213,13 +212,12 @@ void * worker(void *args)
 
 int main(int argc, char* argv[])
 {
-    if(argc != 4)worker_threads
-    {
+    if(argc != 4){
         printf("Usage: File Path to image dirctory, File path to output dirctory, number of worker thread, and Rotation angle\n");
         exit(1);
     }
     
-    char* input_directory = argv[1];
+    //char* input_directory = argv[1];
     char* output_directory = argv[2];
     int num_worker_threads = atoi(argv[3]);
     int rotation_angle = atoi(argv[4]);
@@ -231,12 +229,12 @@ int main(int argc, char* argv[])
         exit(1);
     }
     
-    pthread_t proccessing_thread;
+    pthread_t processing_thread;
     
-    processing_args pargs = {input_directory, num_worker_threads, rotation_angle};
+    struct processing_args pargs = {argv[1], num_worker_threads, rotation_angle};
     
-    pthread_create(&proccessing_thread, NULL, proccessing, &pargs);
-    for (int i = 0; i < num_worker_threads; i++){num_worker_threads
+    pthread_create(&processing_thread, NULL, processing, &pargs);
+    for (int i = 0; i < num_worker_threads; i++){
         pthread_create(&worker_threads[i], NULL, worker, &worker_thread_id[i]);
     }
  
