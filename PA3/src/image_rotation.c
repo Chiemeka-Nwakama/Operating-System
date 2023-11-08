@@ -39,7 +39,7 @@ int queue_index = 0;
 */
 void log_pretty_print(FILE* to_write, int threadId, int requestNumber, char * file_name){
     fprintf(to_write, "[%d][%d][%s]\n", threadId, requestNumber, file_name);
-    printf("[%d][%d][%s]\n", threadId, requestNumber, file_name);
+    fprintf(stdout,"[%d][%d][%s]\n", threadId, requestNumber, file_name);
 }
 
 
@@ -75,43 +75,41 @@ void *processing(void *args)
             continue;
         }
         pthread_mutex_lock(&queue_lock);
-        while(queue_size < MAX_QUEUE_LEN){
-
+        while(queue_size >= MAX_QUEUE_LEN){
             pthread_cond_wait(&queue_empty, &queue_lock);
-
+        }
 
         // store pizza index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
-        pargs -> //maLLOC HERE
-           main_queue->imgpaths[next_pos_for_path] = d_name;
-           main_queue->angle_rot[next_pos_for_path] = procArgs -> rotation_angle
+        //pargs -> //maLLOC HERE
+           main_queue[queue_index]->imgpaths[next_pos_for_path] = newEntry;
+           main_queue[queue_index]->angle_rot = procArgs -> rotation_angle
            next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
 
 
         // increment total number of pizza on stand by 1
 
-        queue_size = queue_size + 1;
+        queue_size++;
 
         
 
         // signal consumer using cons_cond that one pizza is added to stand and unlock the stand
 
-        pthread_cond_signal(&queue_full);
+        pthread_cond_signal(&queue_empty);
 
         pthread_mutex_unlock(&queue_lock);
 
         
 
-        fprintf(stdout, "Producer added Pizza %d to stand\n", d_name);
-
-        fflush(stdout);
+//         fprintf(stdout, "Producer added Pizza %d to stand\n", d_name);
+//         fflush(stdout);
 
     }
     
     pthread_mutex_lock(&queue_lock);
     pthread_cond_signal(&queue_empty);
-    pthread_mutex_unlock(&stand_lock);
-    fprintf(stdout, "Producer completed all orders, exiting...\n");
-    fflush(stdout);
+    pthread_mutex_unlock(&queue_lock);
+//     fprintf(stdout, "Producer completed all orders, exiting...\n");
+//     fflush(stdout);
 
         //worker threads
 
@@ -227,7 +225,7 @@ int main(int argc, char* argv[])
     int rotation_angle = atoi(argv[4]);
  
     char full_dir[4096];
-    log_file = fopen("request_log.txt","w");
+    log_file = fopen(LOG_FILE_NAME,"w");
     if (log_file == NULL) {
         perror("Failed to open request_log file");
         exit(1);
@@ -241,7 +239,12 @@ int main(int argc, char* argv[])
     for (int i = 0; i < num_worker_threads; i++){num_worker_threads
         pthread_create(&worker_threads[i], NULL, worker, &worker_thread_id[i]);
     }
+ 
+    pthread_join(processing_thread, NULL);
+    for (int i = 0; i < num_worker_threads; i++) {
+        pthread_join(worker_threads[i], NULL);
+    }
 
-
-
+    fclose(log_file);
+    return 0;
 }
