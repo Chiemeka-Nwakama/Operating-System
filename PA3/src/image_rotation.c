@@ -192,7 +192,9 @@ void * worker(void *args){
         */
         
         int width, height;
-        uint8_t* image_result = stbi_load(file_name, &width, &height, NULL, CHANNEL_NUM);
+        char log_path[1024];
+        sprintf(log_path, "%s/%s", input_directory, file_name);
+        uint8_t* image_result = stbi_load(log_path, &width, &height, NULL, CHANNEL_NUM);
         uint8_t** result_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
         uint8_t** img_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
         for(int i = 0; i < width; i++){
@@ -247,8 +249,7 @@ void * worker(void *args){
         fflush(stdout);
         char output_path[1024];
         sprintf(output_path, "%s/%s", output_directory, file_name);
-        char log_path[1024];
-        sprintf(log_path, "%s/%s", input_directory, file_name);
+
         printf("Hot one in the mess %s\n",output_path);
         stbi_write_png(output_path, width, height, CHANNEL_NUM, img_array, width*CHANNEL_NUM);
         pthread_mutex_lock(&queue_lock2);
