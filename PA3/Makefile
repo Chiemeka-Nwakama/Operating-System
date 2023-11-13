@@ -13,6 +13,11 @@ image_rotation: $(LIBDIR)/utils.o $(INCDIR)/utils.h $(SRCDIR)/image_rotation.c
 
 .PHONY: clean outdir
 
+test: clean all
+	@read -p "Please a Dir number: " dir_num; \
+	./image_rotation img/$$dir_num output/$$dir_num 10 180;\
+
+
 outdir: 
 	for i in `seq 0 10`; do mkdir -p -m 0777 "output/$$i"; done;
 
