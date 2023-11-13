@@ -1,6 +1,4 @@
 #include "image_rotation.h"
- 
- 
 //Global integer to indicate the length of the queue??
 int queue_length;
 //Global integer to indicate the number of worker threads
@@ -10,8 +8,8 @@ FILE* log_file;
 //Might be helpful to track the ID's of your threads in a global array
 int worker_thread_id[MAX_THREADS];//change sizing method
 //What kind of locks will you need to make everything thread safe? [Hint you need multiple]
-pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t queue_lock2 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;//for queue
+pthread_mutex_t queue_lock2 = PTHREAD_MUTEX_INITIALIZER;//for log
 //What kind of CVs will you need  (i.e. queue full, queue empty) [Hint you need multiple]
 pthread_cond_t queue_empty = PTHREAD_COND_INITIALIZER;
 pthread_cond_t queue_full = PTHREAD_COND_INITIALIZER;
@@ -62,10 +60,8 @@ void log_pretty_print(FILE* to_write, int threadId, int requestNumber, char * fi
 */
 
 void *processing(void *args){
-    printf("Beginning of processing\n");
     processing_args_t *procArgs  = (processing_args_t *)args;
     const char* dirname = procArgs -> dirPath;
-    printf("It's a me %s\n",dirname);
     DIR *dir = opendir(dirname);
      if(dir == NULL){
         perror("opendir");
@@ -80,13 +76,12 @@ void *processing(void *args){
         // skip . and ..
         // concatenate dirname with the directory entry
         char* newEntry = entry->d_name;
-        printf("His child %s\n",newEntry);
-        if(strcmp(newEntry, ".") == 0 ||strcmp(newEntry, "..")  == 0){
+        if(strcmp(newEntry, ".") == 0 ||strcmp(newEntry, "..")  == 0 ){
             continue;
         }
+
         char buf[1024];
         sprintf(buf,"%s/%s",dirname,newEntry);
-        printf("His grandchild %s\n",buf);
         pthread_mutex_lock(&queue_lock);
         while(queue_size >= MAX_QUEUE_LEN){
             pthread_cond_wait(&queue_full, &queue_lock);
@@ -94,48 +89,33 @@ void *processing(void *args){
 
         // store pizza index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
         //pargs -> //maLLOC HERE
-           main_queue[queue_index].imgpaths = (char*)malloc(MAX_QUEUE_LEN * sizeof(char)); 
-           memset(main_queue[queue_index].imgpaths,0,MAX_QUEUE_LEN * sizeof(char));
-           strcpy(main_queue[queue_index].imgpaths,newEntry);
-           main_queue[queue_index].angle_rot = procArgs -> angle_rot;
-           next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
-	   memset(buf,0,1024);
-	   printf("The black sheep %s\n",main_queue[queue_index].imgpaths);
-	   printf("The order of ascension %d\n",queue_index);
+        main_queue[queue_index].imgpaths = (char*)malloc(MAX_QUEUE_LEN * sizeof(char)); 
+        memset(main_queue[queue_index].imgpaths,0,MAX_QUEUE_LEN * sizeof(char));
+        strcpy(main_queue[queue_index].imgpaths,newEntry);
+        main_queue[queue_index].angle_rot = procArgs -> angle_rot;
+        next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
+	    memset(buf,0,1024);
         // increment total number of pizza on stand by 1
 
         queue_size++;
         queue_index = (queue_index + 1) % MAX_QUEUE_LEN;
         
-
         // signal consumer using cons_cond that one pizza is added to stand and unlock the stand
-
         pthread_cond_signal(&queue_empty);
-
         pthread_mutex_unlock(&queue_lock);
-
-        
-
-//         fprintf(stdout, "Producer added Pizza %d to stand\n", d_name);
-//         fflush(stdout);
-
     }
     
-//     fprintf(stdout, "Producer completed all orders, exiting...\n");
-//     fflush(stdout);
-            if (main_queue[queue_index].imgpaths != NULL) {
-                free(main_queue[queue_index].imgpaths);
-                fprintf(stdout, "Consumer completed all orders, exiting...\n");
-                fflush(stdout);
-                }
+    if (main_queue[queue_index].imgpaths != NULL){
+        free(main_queue[queue_index].imgpaths);
+        fprintf(stdout, "Consumer completed all orders, exiting...\n");
+        fflush(stdout);
+    }
     
     // close current directory
     terminate_workers = 1;
     pthread_cond_broadcast(&queue_empty);
     closedir(dir);
     
-    
-    printf("End of processing\n");
     pthread_mutex_unlock(&queue_lock);
     pthread_exit(NULL);
 }
@@ -161,29 +141,26 @@ void *processing(void *args){
 
 
 void * worker(void *args){
-    printf("Beginning of worker\n");
     int threadId = *((int*)args);
     while (1) {
-        pthread_mutex_lock(&queue_lock2);
+        pthread_mutex_lock(&queue_lock);
         while (queue_size == 0 && !terminate_workers) {
-            printf("Queue size: %d\n",queue_size);
-            pthread_cond_wait(&queue_empty, &queue_lock2);
-            printf("Queue size: %d\n",queue_size);
+            pthread_cond_wait(&queue_empty, &queue_lock);
         }
         
         if(terminate_workers){
-            pthread_mutex_unlock(&queue_lock2);
+            pthread_mutex_unlock(&queue_lock);
             break;
         }
+
         char* file_name = main_queue[next_remove].imgpaths;
-        printf("%syeayea\n",main_queue[next_remove].imgpaths);
+        printf("%s\n",main_queue[next_remove].imgpaths);
         int angle = main_queue[next_remove].angle_rot;
         queue_size--;
-        printf("The order of descension %d\n",next_remove);
         next_remove = (next_remove + 1) % MAX_QUEUE_LEN;
 
         pthread_cond_signal(&queue_full);
-        pthread_mutex_unlock(&queue_lock2);
+        pthread_mutex_unlock(&queue_lock);
 
         /*
             Stbi_load takes:
@@ -221,42 +198,28 @@ void * worker(void *args){
             flip_upside_down(img_matrix, result_matrix, width, height);
         }
 
-        
-        
         uint8_t* img_array = (uint8_t*)malloc(sizeof(uint8_t) * width * height); ///Hint malloc using sizeof(uint8_t) * width * height
     
-
-        ///TODO: you should be ready to call flatten_mat function, using result_matrix
+        //TODO: you should be ready to call flatten_mat function, using result_matrix
         //img_arry and width and height; 
         flatten_mat(result_matrix, img_array, width, height);
 
-
-        ///TODO: You should be ready to call stbi_write_png using:
+        //TODO: You should be ready to call stbi_write_png using:
         //New path to where you wanna save the file,
         //Width
         //height
         //img_array
         //width*CHANNEL_NUM
         
-        
-        
-        
-        
-        
-        
-        
-        printf("happy to be here\n");
         fflush(stdout);
         char output_path[1024];
         sprintf(output_path, "%s/%s", output_directory, file_name);
 
-        printf("Hot one in the mess %s\n",output_path);
         stbi_write_png(output_path, width, height, CHANNEL_NUM, img_array, width*CHANNEL_NUM);
         pthread_mutex_lock(&queue_lock2);
         log_pretty_print(log_file, threadId, next_remove, log_path);
         pthread_mutex_unlock(&queue_lock2);
     }
-    printf("Ending of worker\n");
 }
 
 /*
@@ -275,7 +238,7 @@ int main(int argc, char* argv[]){
     {
         fprintf(stderr, "Usage: File Path to image dirctory, File path to output dirctory, number of worker thread, and Rotation angle\n");
     }
-    printf("original0\n");
+
     input_directory = malloc(sizeof(char)*BUFF_SIZE);
     output_directory = malloc(sizeof(char)*BUFF_SIZE);
     strcpy(input_directory,argv[1]);    
@@ -285,7 +248,7 @@ int main(int argc, char* argv[]){
 
     char fname[1024];
     sprintf(fname,"%s.txt",LOG_FILE_NAME);
-    log_file = fopen(fname,"w");
+    log_file = fopen("request_log","a");
     if (log_file == NULL) {
         perror("Failed to open request_log file");
         exit(1);
@@ -307,5 +270,5 @@ int main(int argc, char* argv[]){
     free(input_directory);
     fclose(log_file);
     return 0;
-
 }
+
