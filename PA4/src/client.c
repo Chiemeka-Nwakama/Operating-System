@@ -29,11 +29,36 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
+  
+
+
+
+
     // Set up socket
+
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0); // create socket to establish connection
+    if(sockfd == -1)
+        perror("socket error");
 
     // Connect the socket
 
+    
+    struct sockaddr_in servaddr;
+    servaddr.sin_family = AF_INET; // IPv4
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // server IP, since the server is on same machine, use localhost IP
+    servaddr.sin_port = htons(PORT); // Port the server is listening on
+
+    int ret = connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)); // establish connection to server
+    if(ret == -1)
+        perror("connect error");
+
     // Read the directory for all the images to rotate
+        // Packet to send to server
+    char msg[STRSZ];
+    bzero(msg, STRSZ); // initialize msg with '\0'
+    fprintf(stdout, "Input string to reverse: ");
+    fscanf(stdin, "%[^\n]s", msg); // Read input with space until a newline
+    setbuf(stdin, NULL);
 
     // Send the image data to the server
 
