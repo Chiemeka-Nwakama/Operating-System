@@ -29,6 +29,7 @@ int send_file(int socket, const char *filename) {
     // // Serialize the packet, check common.h and sample/client.c
     // char *serializedData = serializePacket(&packet); // serializes the data
     // // send the serialized data to server
+   
     ret = send(socket, buffer, bytesRead, 0); // sends data to server
     
 
