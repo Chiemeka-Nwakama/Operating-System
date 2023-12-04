@@ -5,7 +5,7 @@
 
 int send_file(int socket, const char *filename) {
      // Open the file
-    FILE *file = fopen(filename, "rb");
+    FILE *file = fopen(filename, "r");
     if (file == NULL) {
         perror("Error opening file");
         return -1;
@@ -13,29 +13,27 @@ int send_file(int socket, const char *filename) {
 
     // Set up the request packet for the server and send it
 
-     Packet packet; // endianess of message
-     packet.operation = htons(PROTO_REV);
-     strcpy(packet.data, msg);
-    // Serialize the packet, check common.h and sample/client.c
-    char *serializedData = serializePacket(&packet);
-    // send the serialized data to server
-    ret = send(sockfd, serializedData, PACKETSZ, 0); // send message to server
-    
-
-    // Sends the file data
     char buffer[BUFFER_SIZE];
     size_t bytesRead;
 
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //sends file data until there is nothing left tosend
-        if (send(socket, buffer, bytesRead, 0) == -1) { //error check
-            perror("Error sending file data");
-            fclose(file);
-            return -1;
-        }
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //read file data into buffer until there is nothing left tosend
+     
     }
-
-    // Close the file
+    // Closes the file
     fclose(file);
+    
+
+     Packet packet; // makes packet veriable
+     packet.operation = htons(PROTO_REV); // calls htons proto revs
+     strcpy(packet.data, buffer);  // copies buffer file data into packet data portion
+    // Serialize the packet, check common.h and sample/client.c
+    char *serializedData = serializePacket(&packet); // serializes the data
+    // send the serialized data to server
+    ret = send(socket, serializedData, PACKETSZ, 0); // sends data to server
+    
+
+
+
 
     return 0;
 }
