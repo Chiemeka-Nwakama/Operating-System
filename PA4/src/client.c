@@ -178,9 +178,9 @@ int main(int argc, char* argv[]) {
     }
     char buf[1024];
     sprintf(buf,"%s/%s",dirname,newEntry);
-    pthread_mutex_lock(&queue_lock);
+    // pthread_mutex_lock(&queue_lock);
     while(queue_size >= MAX_QUEUE_LEN){
-    pthread_cond_wait(&queue_full, &queue_lock);
+    // pthread_cond_wait(&queue_full, &queue_lock);
     }
 
     // store pizza index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
@@ -200,9 +200,9 @@ int main(int argc, char* argv[]) {
 
     // signal consumer using cons_cond that one pizza is added to stand and unlock the stand
 
-    pthread_cond_signal(&queue_empty);
+    // pthread_cond_signal(&queue_empty);
 
-    pthread_mutex_unlock(&queue_lock);
+    // pthread_mutex_unlock(&queue_lock);
 
 
     // fprintf(stdout, "Producer added Pizza %d to stand\n", d_name);
@@ -222,18 +222,18 @@ int main(int argc, char* argv[]) {
     //if(garbage == 0){
     //terminate_workers = 1;
     closedir(dir);
-    pthread_mutex_lock(&queue_lock2);
+    // pthread_mutex_lock(&queue_lock2);
     //int executed = 0;
     while(queue_size >= 0 ){
     printf("We are here the queue size %d\n", queue_size);
     if(executed == pics_changed){
     //pthread_mutex_lock(&queue_lock2);
     trav_complete = 1;
-    pthread_cond_broadcast(&queue_empty);
-    pthread_mutex_unlock(&queue_lock2);
-    pthread_exit(NULL);
+    // pthread_cond_broadcast(&queue_empty);
+    // pthread_mutex_unlock(&queue_lock2);
+    // pthread_exit(NULL);
     }
-    pthread_cond_wait(&queue_full,&queue_lock2);
+    // pthread_cond_wait(&queue_full,&queue_lock2);
     //executed++;
     }
     // printf("We are here the queue size %d\n", queue_size);
