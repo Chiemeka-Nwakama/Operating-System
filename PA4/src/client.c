@@ -41,8 +41,45 @@ int send_file(int socket, const char *filename) {
 
 int receive_file(int socket, const char *filename) {
     // Open the file
+    // Open the file for writing
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Error opening file");
+        return -1;
+    }
 
-    // Receive response packet
+        // Receive response packet
+    Packet responsePacket;
+    char recvdata[PACKETSZ];
+    recv(socket, &responsePacket, sizeof(Packet), 0);
+    memset(recvdata, 0, PACKETSZ);
+   
+    if(ret == -1) // error check
+        perror("recv error");
+
+
+    // // Check if the operation code is what you expect
+    // if (responsePacket.operation != PROTO_REV) {
+    //     fprintf(stderr, "Unexpected protocol revision\n");
+    //     fclose(file);
+    //     return -1;
+    // }
+
+    // Receive the file data
+    char buffer[BUFFER_SIZE];
+    ssize_t bytesRead;
+    strcpy(buffer, responsePacket.data);  // copies packet data into buffer
+
+    while (bytesRead = fwrite(buffer, 1, bytesRead, file); > 0) {
+        // Write the received data to the file
+        
+    }
+
+    // Close the file
+    fclose(file);
+
+    return 0;
+
 
     // Receive the file data
 
