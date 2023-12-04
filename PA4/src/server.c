@@ -1,89 +1,65 @@
 #include "server.h"
 
-#define PORT 5253
+#define PORT 8080
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 1024 
+#define PORT 9064//change this to the last 4 digits of the student id of who submits it
 
 
 void *clientHandler(void *socket) {
 
     // Receive packets from the client
-        // Open the file
-    // Open the file for writing
-    FILE *file = fopen(filename, "w");
-    if (file == NULL) {
-        perror("Error opening file");
-        return -1;
-    }
-
-        // Receive response packet
-    Packet recievedPacket;
     char recvdata[PACKETSZ];
-    memset(recvdata, 0, PACKETSZ);
-    ret = recv(socket, &recievedPacket, sizeof(Packet), 0);
-     
-    if(ret == -1) // error check
+    memset(recvdata, 0 , socket);
+    int ret = recv(socket, recvdata, PACKETSZ, 0);
+    if(ret == -1)
         perror("recv error");
-   
-
-
     // Determine the packet operatation and flags
-
+    
     // Receive the image data using the size
 
     // Process the image data based on the set of flags
 
     // Acknowledge the request and return the processed image data
+
 }
 
 int main(int argc, char* argv[]) {
 
     // Creating socket file descriptor
-        int listen_fd, conn_fd;
-
-    listen_fd = socket(AF_INET, SOCK_STREAM, 0); // create listening socket
-    if(listen_fd == -1)
+    int listen_fd, conn_fd;
+    listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if(listen_fd = -1)
         perror("socket error");
 
     struct sockaddr_in servaddr;
     bzero(&servaddr, sizeof(servaddr));
-    servaddr.sin_family = AF_INET; // IPv4
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY); // Listen to any of the network interface (INADDR_ANY)
-    servaddr.sin_port = htons(PORT); // Port number
-
-
-    
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(PORT);
 
     // Bind the socket to the port
-
-    int ret = bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr)); // bind address, port to socket
+    int ret = bind(listen_fd, (struct sockaddr *) &servaddr, sizeof(servaddr));
     if(ret == -1)
         perror("bind error");
 
-
-
-
     // Listen on the socket
-
-        ret = listen(listen_fd, BACKLOG); // listen on the listen_fd
+    ret = listen(listen_fd, MAX_CLIENTS);
     if(ret == -1)
         perror("listen error");
 
     // Accept connections and create the client handling threads
-    
-    struct sockaddr_in clientaddr;
+    struct sckaddr_in clientaddr;
     socklen_t clientaddr_len = sizeof(clientaddr);
-    conn_fd = accept(listen_fd, (struct sockaddr *) &clientaddr, &clientaddr_len); // accept a request from a client
+    conn_fd = accept(listen_fd, (struct sockaddr *) &clientaddr, &clientaddr_len);
+    
+    clientHandler(conn_fd);
+
     if(conn_fd == -1)
         perror("accept error");
-
-
     // Release any resources
-    
-    // Server receiving packet from client
-    char recvdata[PACKETSZ];
-    memset(recvdata, 0, PACKETSZ);
-    ret = recv(conn_fd, recvdata, PACKETSZ, 0); // receive data from client
-
+    close(conn_fd);
+    close(listen_fd);
     return 0;
 }
+
