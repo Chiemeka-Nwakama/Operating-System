@@ -23,13 +23,13 @@ int send_file(int socket, const char *filename) {
     fclose(file);
     
 
-     Packet packet; // makes packet veriable
-     packet.operation = htons(PROTO_REV); // calls htons proto revs
-     strcpy(packet.data, buffer);  // copies buffer file data into packet data portion
-    // Serialize the packet, check common.h and sample/client.c
-    char *serializedData = serializePacket(&packet); // serializes the data
-    // send the serialized data to server
-    ret = send(socket, serializedData, PACKETSZ, 0); // sends data to server
+    //  Packet packet; // makes packet variable
+    //  packet.operation = htons(PROTO_REV); // calls htons proto revs
+    //  strcpy(packet.data, buffer);  // copies buffer file data into packet data portion
+    // // Serialize the packet, check common.h and sample/client.c
+    // char *serializedData = serializePacket(&packet); // serializes the data
+    // // send the serialized data to server
+    ret = send(socket, buffer, bytesRead, 0); // sends data to server
     
 
 
