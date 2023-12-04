@@ -69,7 +69,7 @@ int send_file(int socket, const char *filename) {
     // char *serializedData = serializePacket(&packet); // serializes the data
 
 
-   
+    int ret;
     ret = send(socket, buffer, bytesRead, 0); // sends data to server
     
 
