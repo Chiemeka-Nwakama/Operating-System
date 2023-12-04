@@ -1,16 +1,45 @@
 #include "client.h"
 
-#define PORT 8080
+#define PORT 5253
 #define BUFFER_SIZE 1024 
 
 int send_file(int socket, const char *filename) {
-    // Open the file
+     // Open the file
+    FILE *file = fopen(filename, "rb");
+    if (file == NULL) {
+        perror("Error opening file");
+        return -1;
+    }
 
     // Set up the request packet for the server and send it
 
-    // Send the file data
+     Packet packet; // endianess of message
+     packet.operation = htons(PROTO_REV);
+     strcpy(packet.data, msg);
+    // Serialize the packet, check common.h and sample/client.c
+    char *serializedData = serializePacket(&packet);
+    // send the serialized data to server
+    ret = send(sockfd, serializedData, PACKETSZ, 0); // send message to server
+    
+
+    // Sends the file data
+    char buffer[BUFFER_SIZE];
+    size_t bytesRead;
+
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //sends file data until there is nothing left tosend
+        if (send(socket, buffer, bytesRead, 0) == -1) { //error check
+            perror("Error sending file data");
+            fclose(file);
+            return -1;
+        }
+    }
+
+    // Close the file
+    fclose(file);
+
     return 0;
 }
+
 
 int receive_file(int socket, const char *filename) {
     // Open the file
