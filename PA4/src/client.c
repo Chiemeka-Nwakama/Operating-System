@@ -52,7 +52,7 @@ int receive_file(int socket, const char *filename) {
         // Receive response packet
     Packet responsePacket;
     char recvdata[PACKETSZ];
-    recv(socket, &responsePacket, sizeof(Packet), 0);
+    ret = recv(socket, &responsePacket, sizeof(Packet), 0);
     memset(recvdata, 0, PACKETSZ);
    
     if(ret == -1) // error check

@@ -8,6 +8,24 @@
 void *clientHandler(void *socket) {
 
     // Receive packets from the client
+        // Open the file
+    // Open the file for writing
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        perror("Error opening file");
+        return -1;
+    }
+
+        // Receive response packet
+    Packet recievedPacket;
+    char recvdata[PACKETSZ];
+    memset(recvdata, 0, PACKETSZ);
+    ret = recv(socket, &recievedPacket, sizeof(Packet), 0);
+     
+    if(ret == -1) // error check
+        perror("recv error");
+   
+
 
     // Determine the packet operatation and flags
 
