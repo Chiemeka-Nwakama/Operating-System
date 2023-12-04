@@ -121,11 +121,12 @@ int main(int argc, char* argv[]) {
         // Packet to send to server
     char msg[STRSZ];
     bzero(msg, STRSZ); // initialize msg with '\0'
-    fprintf(stdout, "Input string to reverse: ");
-    fscanf(stdin, "%[^\n]s", msg); /o/ Read input with space until a newline
+    fscanf(stdin, "%[^\n]s", msg); ///o/ Read input with space until a newline
     setbuf(stdin, NULL);
 
     // Send the image data to the server
+
+    
 
     // Check that the request was acknowledged
 
