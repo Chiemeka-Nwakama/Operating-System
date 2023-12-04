@@ -9,9 +9,9 @@
 void *clientHandler(void *socket) {
 
     // Receive packets from the client
-    char recvdata[PACKETSZ];
+    char recvdata[BUFFER_SIZE];
     memset(recvdata, 0 , socket);
-    int ret = recv(socket, recvdata, PACKETSZ, 0);
+    int ret = recv(socket, recvdata, BUFFER_SIZE, 0);
     if(ret == -1)
         perror("recv error");
     // Determine the packet operatation and flags
