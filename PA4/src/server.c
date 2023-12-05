@@ -6,21 +6,21 @@
 
 
 void *clientHandler(void *socket) {
-
     // Receive packets from the client
     char recvdata[BUFFER_SIZE];
     memset(recvdata, 0 , BUFFER_SIZE);
     int ret = recv(socket, recvdata, BUFFER_SIZE, 0);
     if(ret == -1)
         perror("recv error");
+
     // Determine the packet operatation and flags
-    packet_t *recvpacket = deserializeData(recvdata);
-    // Receive the image data using the size
-
-    // Process the image data based on the set of flags
-
-    // Acknowledge the request and return the processed image data
-
+    packet_t *recvpacket = recvdata;
+    char operation;
+    char flags;
+    int size;
+    strcpy(operation, recvpacket->operation);
+    strcpy(flags, recvpacket->flags);
+    strcpy(size, recvpacket->size);
 }
 
 int main(int argc, char* argv[]) {
