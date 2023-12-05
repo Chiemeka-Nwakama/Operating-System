@@ -233,15 +233,15 @@ int main(int argc, char* argv[]) {
     packet.size = file_size;
 
     
-    // Serialize the packet, check common.h and sample/client.c
+    // Serialize the packet, check common.h and sample/client.c, we don't want to serialize with this function because it doesn't exist
     char *serializedData = serializePacket(&packet);
-  
     // send the serialized data to server
-    ret = send(sockfd, serializedData,  BUFF_SIZE, 0); // send message to server
+    ret = send(sockfd, serializedData,  BUFF_SIZE, 0); // send message to server, why do we have 2 sends
     if(ret == -1)
         perror("send error");
     //after sending the packet with all the request information, send the image data
-    send_file(sockfd, main_queue[next_remove].imgpaths);
+    send_file(sockfd, main_queue[next_remove].imgpaths);//Don't we need to send what's in the packet?
+
 
 
     
