@@ -1,8 +1,10 @@
 #include "client.h"
 
+
+
 #define PORT 5253
 #define BUFFER_SIZE 1024
-#include "image_rotation.h"
+
 
 //Global integer to indicate the length of the queue??
 int queue_length;
@@ -82,10 +84,10 @@ int receive_file(int socket, const char *filename) {
     }
 
         // Receive response packet
-    Packet responsePacket;
-    char recvdata[PACKETSZ];
-    ret = recv(socket, &responsePacket, sizeof(Packet), 0);
-    memset(recvdata, 0, PACKETSZ);
+    packet_t responsePacket;
+    char recvdata [BUFF_SIZE];
+    int ret = recv(socket, &responsePacket, sizeof(packet_t), 0);
+    memset(recvdata, 0,  BUFF_SIZE);
    
     if(ret == -1) // error check
         perror("recv error");
@@ -102,12 +104,12 @@ int receive_file(int socket, const char *filename) {
     char buffer[BUFFER_SIZE];
     ssize_t bytesRead;
    
-    while (bytesRead = fwrite(buffer, 1, bytesRead, file); > 0) {
+    while (bytesRead = fwrite(buffer, 1, bytesRead, file) > 0) {
         // Write the received data to the file
         
     }
 
-     strcpy(buffer, responsePacket.data);  // copies packet data into buffer
+  
 
 
     // Close the file
@@ -209,7 +211,7 @@ int main(int argc, char* argv[]) {
 
 
     // Fill the content of packet, check sample/client.c
-     Packet packet; 
+     packet_t packet; 
     // gives operation
      packet.operation = IMG_OP_ROTATE;
 
@@ -239,7 +241,7 @@ int main(int argc, char* argv[]) {
 
 
     int file_size = ftell(fp); // gets the size of the file
-    fclose(fp)
+    fclose(fp);
     packet.size = file_size;
 
     
@@ -247,25 +249,25 @@ int main(int argc, char* argv[]) {
     char *serializedData = serializePacket(&packet);
   
     // send the serialized data to server
-    ret = send(sockfd, serializedData, PACKETSZ, 0); // send message to server
+    ret = send(sockfd, serializedData,  BUFF_SIZE, 0); // send message to server
     if(ret == -1)
         perror("send error");
     //after sending the packet with all the request information, send the image data
-    send_file(sockfd, main_queue[next_remove].imgpaths)
+    send_file(sockfd, main_queue[next_remove].imgpaths);
 
 
     
 
     // Check that the request was acknowledged
     
-    char recvdata[PACKETSZ];
-    memset(recvdata, 0, PACKETSZ);
-    ret = recv(sockfd, recvdata, PACKETSZ, 0); // receive data from server
+    char recvdata [BUFF_SIZE];
+    memset(recvdata, 0,  BUFF_SIZE);
+    ret = recv(sockfd, recvdata, BUFF_SIZE, 0); // receive data from server
     if(ret == -1)
         perror("recv error");
 
     // Deserialize the received data, check common.h and sample/client.c
-    Packet *ackpacket = NULL;
+    packet_t *ackpacket = NULL;
     ackpacket = deserializeData(recvdata);
 
     queue_size--; // decrements size by one
