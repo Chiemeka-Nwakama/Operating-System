@@ -1,16 +1,15 @@
 #include "server.h"
 
-#define PORT 8080
+#define PORT 8080//change to id of who submits it
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 1024 
-#define PORT 9064//change this to the last 4 digits of the student id of who submits it
 
 
 void *clientHandler(void *socket) {
 
     // Receive packets from the client
     char recvdata[BUFFER_SIZE];
-    memset(recvdata, 0 , socket);
+    memset(recvdata, 0 , BUFFER_SIZE);
     int ret = recv(socket, recvdata, BUFFER_SIZE, 0);
     if(ret == -1)
         perror("recv error");
@@ -29,7 +28,7 @@ int main(int argc, char* argv[]) {
     // Creating socket file descriptor
     int listen_fd, conn_fd;
     listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(listen_fd = -1)
+    if(listen_fd == -1)
         perror("socket error");
 
     struct sockaddr_in servaddr;
@@ -49,11 +48,11 @@ int main(int argc, char* argv[]) {
         perror("listen error");
 
     // Accept connections and create the client handling threads
-    struct sckaddr_in clientaddr;
-    socklen_t clientaddr_len = sizeof(clientaddr);
-    conn_fd = accept(listen_fd, (struct sockaddr *) &clientaddr, &clientaddr_len);
+    //struct sckaddr_in clientaddr;
+    //socklen_t clientaddr_len = sizeof(clientaddr);
+    conn_fd = accept(listen_fd, (struct sockaddr *) &servaddr, BUFFER_SIZE);
     
-    clientHandler(conn_fd);
+    clientHandler(&conn_fd);
 
     if(conn_fd == -1)
         perror("accept error");
