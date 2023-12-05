@@ -33,7 +33,7 @@ int trav_complete = 0;
 
 int send_file(int socket, const char *filename) {
      // Open the file
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(filename, "rb");
     if (file == NULL) {
         perror("Error opening file");
         return -1;
@@ -210,15 +210,48 @@ int main(int argc, char* argv[]) {
 
     // Fill the content of packet, check sample/client.c
      Packet packet; 
-    
+    // gives operation
      packet.operation = IMG_OP_ROTATE;
+
+
+    
+     if( main_queue[next_remove].rotation_angle == 180){
+
+        packet.flags = IMG_FLAG_ROTATE_180 ;
+
+     }
+     else if(main_queue[next_remove].rotation_angle == 270){
+
+        packet.flags = IMG_FLAG_ROTATE_270 ;
+     }
+
+     
+
+      FILE *fp = fopen(main_queue[next_remove].imgpaths, "rb"); // opens file
+
+    if (fp==NULL) //checks for error
+        return -1;
+
+    if (fseek(fp, 0, SEEK_END) < 0) { // fseeks to end of file
+        fclose(fp);
+        return -1;
+    }
+
+
+    int file_size = ftell(fp); // gets the size of the file
+    fclose(fp)
+    packet.size = file_size;
+
     
     // Serialize the packet, check common.h and sample/client.c
     char *serializedData = serializePacket(&packet);
+  
     // send the serialized data to server
     ret = send(sockfd, serializedData, PACKETSZ, 0); // send message to server
     if(ret == -1)
         perror("send error");
+    //after sending the packet with all the request information, send the image data
+    send_file(sockfd, main_queue[next_remove].imgpaths)
 
 
     
@@ -234,6 +267,10 @@ int main(int argc, char* argv[]) {
     // Deserialize the received data, check common.h and sample/client.c
     Packet *ackpacket = NULL;
     ackpacket = deserializeData(recvdata);
+
+    queue_size--; // decrements size by one
+
+    next_remove = (next_remove + 1) % MAX_QUEUE_LEN; // goes to next thing in queue
 
 
     // Receive the processed image and save it in the output dir
