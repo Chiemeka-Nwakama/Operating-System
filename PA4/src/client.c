@@ -41,23 +41,35 @@ int send_file(int socket, const char *filename) {
         return -1;
     }
     // Set up the request packet for the server and send it
-    char buffer[BUFFER_SIZE];
-    size_t bytesRead;
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //read file data into buffer until there is nothing left to send
+    //char buffer[BUFFER_SIZE];
+    //size_t bytesRead;
+    //while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //read file data into buffer until there is nothing left to send
+    //}
+    // Closes the file
+    //fclose(file);
+    // // send the serialized data to server
+
+    
+    packet_t packet; // makes packet variable
+    packet.operation = htons(IMG_OP_ROTATE); // calls htons proto revs
+//    strcpy(packet.operation, buffer);  // copies buffer file data into packet operation portion?
+//    strcpy(packet.flags, buffer);//copies buffer to packet flags operation?
+ //   strcpy(packet.size, buffer);//copies buffer to packet size operation?
+
+   // int ret;
+    //ret = send(socket, buffer, bytesRead, 0); // sends data to server
+      
+    int ret;
+    while ((ret = fread(packet.image_data, 1, sizeof(packet.image_data), file)) > 0) {
+        packet.size = ret;
+        ret = send(socket, &packet, sizeof(packet_t), 0);
+        if (ret == -1) {
+            perror("send error");
+            break;
+        }
     }
     // Closes the file
     fclose(file);
-    // // send the serialized data to server
-
-    packet_t packet; // makes packet variable
-    packet.operation = htons(IMG_OP_ROTATE); // calls htons proto revs
-    strcpy(packet.operation, buffer);  // copies buffer file data into packet operation portion?
-    strcpy(packet.flags, buffer);//copies buffer to packet flags operation?
-    strcpy(packet.size, buffer);//copies buffer to packet size operation?
-
-    int ret;
-    ret = send(socket, buffer, bytesRead, 0); // sends data to server
-    
     return 0;
 }
 
@@ -94,7 +106,7 @@ int receive_file(int socket, const char *filename) {
    
     while (bytesRead = fwrite(buffer, 1, bytesRead, file) > 0) {
         // Write the received data to the file
-        
+        fwrite(buffer, 1, bytesRead, file);
     }
 
   
@@ -166,11 +178,14 @@ int main(int argc, char* argv[]) {
 
     // store index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
     //pargs -> //maLLOC HERE
+    main_queue[queue_index].imgpaths = (char*)malloc((strlen(newEntry) + 1) * sizeof(char));
+        strcpy(main_queue[queue_index].imgpaths, newEntry);
+          
     main_queue[queue_index].imgpaths = (char*)malloc(MAX_QUEUE_LEN * sizeof(char));
     memset(main_queue[queue_index].imgpaths,0,MAX_QUEUE_LEN * sizeof(char));
     strcpy(main_queue[queue_index].imgpaths,newEntry);
-    main_queue[queue_index].angle_rot = procArgs -> angle_rot;
-    next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
+    main_queue[queue_index].angle_rot =  atoi(argv[3]);
+    //next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
     memset(buf,0,1024);
 
     // increment total  stand by 1
