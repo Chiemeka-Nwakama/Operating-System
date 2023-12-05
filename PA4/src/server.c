@@ -15,7 +15,7 @@ void *clientHandler(void *socket) {
     if(ret == -1)
         perror("recv error");
     // Determine the packet operatation and flags
-    
+    packet_t *recvpacket = deserializeData(recvdata);
     // Receive the image data using the size
 
     // Process the image data based on the set of flags
