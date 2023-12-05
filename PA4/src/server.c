@@ -21,6 +21,13 @@ void *clientHandler(void *socket) {
     strcpy(operation, recvpacket->operation);
     strcpy(flags, recvpacket->flags);
     strcpy(size, recvpacket->size);
+
+    // Receive the image data using the size
+
+    // Process the image data based on the set of flags
+
+    // Acknowledge the request and return the processed image data
+
 }
 
 int main(int argc, char* argv[]) {
