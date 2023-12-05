@@ -34,42 +34,30 @@ int trav_complete = 0;
 
 
 int send_file(int socket, const char *filename) {
-     // Open the file
+      // Open the file
     FILE *file = fopen(filename, "rb");
     if (file == NULL) {
         perror("Error opening file");
         return -1;
     }
-
     // Set up the request packet for the server and send it
-
     char buffer[BUFFER_SIZE];
     size_t bytesRead;
-
-    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //read file data into buffer until there is nothing left tosend
-     
+    while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //read file data into buffer until there is nothing left to send
     }
     // Closes the file
     fclose(file);
-    
-
-
     // // send the serialized data to server
 
-    //  Packet packet; // makes packet variable
-    //  packet.operation = htons(PROTO_REV); // calls htons proto revs
-    //  strcpy(packet.data, buffer);  // copies buffer file data into packet data portion
-    // // Serialize the packet, check common.h and sample/client.c
-    // char *serializedData = serializePacket(&packet); // serializes the data
-
+    packet_t packet; // makes packet variable
+    packet.operation = htons(IMG_OP_ROTATE); // calls htons proto revs
+    strcpy(packet.operation, buffer);  // copies buffer file data into packet operation portion?
+    strcpy(packet.flags, buffer);//copies buffer to packet flags operation?
+    strcpy(packet.size, buffer);//copies buffer to packet size operation?
 
     int ret;
     ret = send(socket, buffer, bytesRead, 0); // sends data to server
     
-
-
-
-
     return 0;
 }
 
