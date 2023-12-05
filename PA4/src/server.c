@@ -20,7 +20,7 @@ void *clientHandler(void *socket) {
     int size;
     strcpy(operation, recvpacket->operation);
     strcpy(flags, recvpacket->flags);
-    strcpy(size, recvpacket->size);
+    size = recvpacket->size;
 
     // Receive the image data using the size
 
