@@ -18,8 +18,11 @@ void *clientHandler(void *socket) {
     char operation;
     char flags;
     int size;
-    strcpy(operation, recvpacket->operation);
-    strcpy(flags, recvpacket->flags);
+    memset(operation, 0, sizeof(unsigned char));
+    memcpy(operation, recvpacket->operation, sizeof(unsigned char));
+    memset(flags, 0, sizeof(unsigned char));
+    memcpy(flags, recvpacket->flags, sizeof(unsigned char));
+    size = recvpacket->size;
     size = recvpacket->size;
 
     // Receive the image data using the size
