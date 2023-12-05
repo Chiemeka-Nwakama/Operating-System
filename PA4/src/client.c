@@ -11,15 +11,7 @@ int num_worker_threads;
 //Global file pointer for writing to log file in worker??
 FILE* log_file;
 //Might be helpful to track the ID's of your threads in a global array
-int worker_thread_id[MAX_THREADS];//change sizing method
-//What kind of locks will you need to make everything thread safe? [Hint you need multiple]
-pthread_mutex_t queue_lock = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t queue_lock2 = PTHREAD_MUTEX_INITIALIZER;
-//What kind of CVs will you need (i.e. queue full, queue empty) [Hint you need multiple]
-pthread_cond_t queue_empty = PTHREAD_COND_INITIALIZER;
-pthread_cond_t queue_full = PTHREAD_COND_INITIALIZER;
-pthread_cond_t queue_done = PTHREAD_COND_INITIALIZER;
-//How will you track the requests globally between threads? How will you ensure this is thread safe?
+
 request_t main_queue[MAX_QUEUE_LEN];
 char* request_queue[MAX_QUEUE_LEN];
 //How will you track which index in the request queue to remove next?
@@ -29,7 +21,7 @@ int queue_size = 0;
 int pics_changed = 0;
 
 //How will you track the p_thread's that you create for workers?
-pthread_t worker_threads[MAX_THREADS];//change sizing mechanism
+
 //How will you know where to insert the next request received into the request queue?
 int queue_index = 0;
 int executed = 0;
@@ -109,17 +101,17 @@ int receive_file(int socket, const char *filename) {
     // Receive the file data
     char buffer[BUFFER_SIZE];
     ssize_t bytesRead;
-    strcpy(buffer, responsePacket.data);  // copies packet data into buffer
-
+   
     while (bytesRead = fwrite(buffer, 1, bytesRead, file); > 0) {
         // Write the received data to the file
         
     }
 
+     strcpy(buffer, responsePacket.data);  // copies packet data into buffer
+
+
     // Close the file
     fclose(file);
-
-    return 0;
 
 
     // Receive the file data
@@ -159,8 +151,7 @@ int main(int argc, char* argv[]) {
 
     // Read the directory for all the images to rotate
 
-    processing_args_t *procArgs = (processing_args_t *)args;
-    const char* dirname = procArgs -> dirPath;
+    const char* dirname = argv[1]; // input directory argv 1
     DIR *dir = opendir(dirname);
     if(dir == NULL){
     perror("opendir");
@@ -183,7 +174,7 @@ int main(int argc, char* argv[]) {
     // pthread_cond_wait(&queue_full, &queue_lock);
     }
 
-    // store pizza index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
+    // store index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
     //pargs -> //maLLOC HERE
     main_queue[queue_index].imgpaths = (char*)malloc(MAX_QUEUE_LEN * sizeof(char));
     memset(main_queue[queue_index].imgpaths,0,MAX_QUEUE_LEN * sizeof(char));
@@ -192,77 +183,69 @@ int main(int argc, char* argv[]) {
     next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
     memset(buf,0,1024);
 
-    // increment total number of pizza on stand by 1
+    // increment total  stand by 1
 
     queue_size++;
     pics_changed++;
     queue_index = (queue_index + 1) % MAX_QUEUE_LEN;
 
-    // signal consumer using cons_cond that one pizza is added to stand and unlock the stand
 
-    // pthread_cond_signal(&queue_empty);
-
-    // pthread_mutex_unlock(&queue_lock);
-
-
-    // fprintf(stdout, "Producer added Pizza %d to stand\n", d_name);
-    // fflush(stdout);
 
     }
-    // fprintf(stdout, "Producer completed all orders, exiting...\n");
-    // fflush(stdout);
-    // if (main_queue[queue_index].imgpaths != NULL) {
-    // free(main_queue[queue_index].imgpaths);
-    // fprintf(stdout, "Consumer completed all orders, exiting...\n");
-    // fflush(stdout);
-    // }
-    // close current directory
-    //terminate_workers = 1;
-    //int garbage;
-    //if(garbage == 0){
-    //terminate_workers = 1;
+   
     closedir(dir);
-    // pthread_mutex_lock(&queue_lock2);
-    //int executed = 0;
+ 
     while(queue_size >= 0 ){
     printf("We are here the queue size %d\n", queue_size);
     if(executed == pics_changed){
-    //pthread_mutex_lock(&queue_lock2);
-    trav_complete = 1;
-    // pthread_cond_broadcast(&queue_empty);
-    // pthread_mutex_unlock(&queue_lock2);
-    // pthread_exit(NULL);
-    }
-    // pthread_cond_wait(&queue_full,&queue_lock2);
-    //executed++;
-    }
-    // printf("We are here the queue size %d\n", queue_size);
-    // if(executed == pics_changed){
-    // pthread_mutex_lock(&queue_lock);
-    // trav_complete = 1;
-    // pthread_cond_broadcast(&queue_empty);
-    // pthread_mutex_unlock(&queue_lock);
-    // }
-    // pthread_mutex_unlock(&queue_lock2);
-    // printf("End of this\n");
-    // pthread_exit(NULL);
-    //}
-  
-    char msg[STRSZ];
-    bzero(msg, STRSZ); // initialize msg with '\0'
-    fscanf(stdin, "%[^\n]s", msg); ///o/ Read input with space until a newline
-    setbuf(stdin, NULL);
 
-    // Send the image data to the server
+    trav_complete = 1;
+ 
+    }
+
+    }
+
+  
+
+
+    // Fill the content of packet, check sample/client.c
+     Packet packet; 
+    
+     packet.operation = IMG_OP_ROTATE;
+    
+    // Serialize the packet, check common.h and sample/client.c
+    char *serializedData = serializePacket(&packet);
+    // send the serialized data to server
+    ret = send(sockfd, serializedData, PACKETSZ, 0); // send message to server
+    if(ret == -1)
+        perror("send error");
+
 
     
 
     // Check that the request was acknowledged
+    
+    char recvdata[PACKETSZ];
+    memset(recvdata, 0, PACKETSZ);
+    ret = recv(sockfd, recvdata, PACKETSZ, 0); // receive data from server
+    if(ret == -1)
+        perror("recv error");
+
+    // Deserialize the received data, check common.h and sample/client.c
+    Packet *ackpacket = NULL;
+    ackpacket = deserializeData(recvdata);
+
 
     // Receive the processed image and save it in the output dir
+
 
     // Terminate the connection once all images have been processed
 
     // Release any resources
+
+    free(ackpacket);
+    ackpacket = NULL;    
+    
+    close(sockfd); // close socket
     return 0;
 }
