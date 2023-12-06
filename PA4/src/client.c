@@ -2,7 +2,7 @@
 
 
 
-#define PORT 5253
+#define PORT 7882
 #define BUFFER_SIZE 1024
 
 
@@ -60,7 +60,7 @@ int send_file(int socket, const char *filename) {
     //ret = send(socket, buffer, bytesRead, 0); // sends data to server
       
     int ret;
-    while ((ret = fread(packet.image_data, 1, sizeof(packet.image_data), file)) > 0) {
+    while ((ret = fread(packet.checksum, 1, sizeof(packet.checksum), file)) > 0) {
         packet.size = ret;
         ret = send(socket, &packet, sizeof(packet_t), 0);
         if (ret == -1) {
@@ -104,7 +104,7 @@ int receive_file(int socket, const char *filename) {
     char buffer[BUFFER_SIZE];
     ssize_t bytesRead;
    
-    while (bytesRead = fwrite(buffer, 1, bytesRead, file) > 0) {
+    while ((bytesRead = fwrite(buffer, 1, bytesRead, file)) > 0) {
         // Write the received data to the file
         fwrite(buffer, 1, bytesRead, file);
     }
@@ -123,7 +123,7 @@ int receive_file(int socket, const char *filename) {
 }
 
 int main(int argc, char* argv[]) {
-    if(argc != 3){
+    if(argc != 4){
         fprintf(stderr, "Usage: ./client File_Path_to_images File_Path_to_output_dir Rotation_angle. \n");
         return 1;
     }
@@ -156,63 +156,34 @@ int main(int argc, char* argv[]) {
     const char* dirname = argv[1]; // input directory argv 1
     DIR *dir = opendir(dirname);
     if(dir == NULL){
-    perror("opendir");
-    exit(1);
+	    perror("opendir");
+	    exit(1);
     }
     // Traverse through all entries
     struct dirent *entry;
-    int next_pos_for_path = 0;
     while((entry = readdir(dir)) != NULL){
-    // skip . and ..
-    // concatenate dirname with the directory entry
-    char* newEntry = entry->d_name;
-    if(strcmp(newEntry, ".") == 0 ||strcmp(newEntry, "..") == 0){
-    continue;
-    }
-    char buf[1024];
-    sprintf(buf,"%s/%s",dirname,newEntry);
-    // pthread_mutex_lock(&queue_lock);
-    while(queue_size >= MAX_QUEUE_LEN){
-    // pthread_cond_wait(&queue_full, &queue_lock);
-    }
+		// skip . and ..
+		// concatenate dirname with the directory entry
+		char* newEntry = entry->d_name;
+		if(strcmp(newEntry, ".") == 0 ||strcmp(newEntry, "..") == 0){
+			continue;
+		}
+		char buf[1024];
+		sprintf(buf,"%s/%s",dirname,newEntry);
+		main_queue[queue_index].file_name = (char*)malloc((strlen(newEntry) + 1) * sizeof(char));
+		memset(main_queue[queue_index].file_name,0,MAX_QUEUE_LEN * sizeof(char));
+		strcpy(main_queue[queue_index].file_name, newEntry);    
+		main_queue[queue_index].rotation_angle = atoi(argv[3]);
+		memset(buf,0,1024);
 
-    // store index i at next_pos_for_pizza location in pizza_order_stand and update the next position to store pizza
-    //pargs -> //maLLOC HERE
-    main_queue[queue_index].imgpaths = (char*)malloc((strlen(newEntry) + 1) * sizeof(char));
-        strcpy(main_queue[queue_index].imgpaths, newEntry);
-          
-    main_queue[queue_index].imgpaths = (char*)malloc(MAX_QUEUE_LEN * sizeof(char));
-    memset(main_queue[queue_index].imgpaths,0,MAX_QUEUE_LEN * sizeof(char));
-    strcpy(main_queue[queue_index].imgpaths,newEntry);
-    main_queue[queue_index].angle_rot =  atoi(argv[3]);
-    //next_pos_for_path = (next_pos_for_path + 1) % MAX_QUEUE_LEN;
-    memset(buf,0,1024);
+		// increment total  stand by 1
 
-    // increment total  stand by 1
-
-    queue_size++;
-    pics_changed++;
-    queue_index = (queue_index + 1) % MAX_QUEUE_LEN;
-
-
-
-    }
-   
+		queue_size++;
+		queue_index = (queue_index + 1);
+	}
     closedir(dir);
- 
-    while(queue_size >= 0 ){
-    printf("We are here the queue size %d\n", queue_size);
-    if(executed == pics_changed){
-
-    trav_complete = 1;
- 
-    }
-
-    }
-
-  
-
-
+    while(next_remove < queue_size){
+    
     // Fill the content of packet, check sample/client.c
      packet_t packet; 
     // gives operation
@@ -232,7 +203,7 @@ int main(int argc, char* argv[]) {
 
      
 
-      FILE *fp = fopen(main_queue[next_remove].imgpaths, "rb"); // opens file
+      FILE *fp = fopen(main_queue[next_remove].file_name, "rb"); // opens file
 
     if (fp==NULL) //checks for error
         return -1;
@@ -251,11 +222,12 @@ int main(int argc, char* argv[]) {
     // Serialize the packet, check common.h and sample/client.c, we don't want to serialize with this function because it doesn't exist
     char *serializedData = serializePacket(&packet);
     // send the serialized data to server
-    ret = send(sockfd, serializedData,  BUFF_SIZE, 0); // send message to server, why do we have 2 sends
-    if(ret == -1)
-        perror("send error");
     //after sending the packet with all the request information, send the image data
-    send_file(sockfd, main_queue[next_remove].imgpaths);//Don't we need to send what's in the packet?
+    int ret = send(sockfd, serializedData, sizeof(packet_t), 0);
+     if(ret == -1)
+        perror("send error");
+
+    send_file(sockfd, main_queue[next_remove].file_name);//Don't we need to send what's in the packet?
 
 
 
@@ -263,9 +235,9 @@ int main(int argc, char* argv[]) {
 
     // Check that the request was acknowledged
     
-    char recvdata [BUFF_SIZE];
-    memset(recvdata, 0,  BUFF_SIZE);
-    ret = recv(sockfd, recvdata, BUFF_SIZE, 0); // receive data from server
+    char recvdata [sizeof(packet_t)];
+    memset(recvdata, 0,  sizeof(packet_t));
+    ret = recv(sockfd, recvdata, sizeof(packet_t), 0); // receive data from server
     if(ret == -1)
         perror("recv error");
 
@@ -273,9 +245,8 @@ int main(int argc, char* argv[]) {
     packet_t *ackpacket = NULL;
     ackpacket = deserializeData(recvdata);
 
-    queue_size--; // decrements size by one
 
-    next_remove = (next_remove + 1) % MAX_QUEUE_LEN; // goes to next thing in queue
+    next_remove = (next_remove + 1); // goes to next thing in queue
 
 
     // Receive the processed image and save it in the output dir
@@ -289,5 +260,9 @@ int main(int argc, char* argv[]) {
     ackpacket = NULL;    
     
     close(sockfd); // close socket
-    return 0;
+    
+    }
+    
+return 0;
+
 }
