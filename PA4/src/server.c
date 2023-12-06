@@ -1,35 +1,45 @@
 #include "server.h"
 
-#define PORT 8080//change to id of who submits it
+#define PORT 7882//change to id of who submits it
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 1024 
 
 
 void *clientHandler(void *socket) {
     // Receive packets from the client
-    char recvdata[BUFFER_SIZE];
-    memset(recvdata, 0 , BUFFER_SIZE);
-    int ret = recv(socket, recvdata, BUFFER_SIZE, 0);
+    char recvdata[sizeof(packet_t)];
+    memset(recvdata, 0 , sizeof(packet_t));
+    int ret = recv(socket, recvdata, sizeof(packet_t), 0);
     if(ret == -1)
         perror("recv error");
 
     // Determine the packet operatation and flags
-    packet_t *recvpacket = recvdata;
+    packet_t *recvpacket;
+    memset(recvpacket, 0, sizeof(packet_t));
+    recvpacket = recvdata;
     char operation;
     char flags;
     int size;
-    memset(operation, 0, sizeof(unsigned char));
     memcpy(operation, recvpacket->operation, sizeof(unsigned char));
-    memset(flags, 0, sizeof(unsigned char));
     memcpy(flags, recvpacket->flags, sizeof(unsigned char));
     size = recvpacket->size;
     size = recvpacket->size;
 
     // Receive the image data using the size
+    
 
     // Process the image data based on the set of flags
+    
+    
+      // Acknowledge the request and return the processed image data
+     char *serializedData = serializePacket(&recvpacket);
+     ret = send(socket, serializedData, sizeof(packet_t), 0);
+     if(ret == -1)
+        perror("send error");
 
-    // Acknowledge the request and return the processed image data
+      
+
+  
 
 }
 
@@ -60,7 +70,7 @@ int main(int argc, char* argv[]) {
     // Accept connections and create the client handling threads
     //struct sckaddr_in clientaddr;
     //socklen_t clientaddr_len = sizeof(clientaddr);
-    conn_fd = accept(listen_fd, (struct sockaddr *) &servaddr, BUFFER_SIZE);
+    conn_fd = accept(listen_fd, (struct sockaddr *) &servaddr, sizeof(packet_t));
     
     clientHandler(&conn_fd);
 
@@ -71,4 +81,3 @@ int main(int argc, char* argv[]) {
     close(listen_fd);
     return 0;
 }
-
