@@ -66,4 +66,19 @@ typedef struct processing_args {
     char *file_name;
 } processing_args_t;
 
+char *serializePacket(packet_t *packet){
+    char *serializedData = (char *)malloc(sizeof(char) * sizeof(packet_t));
+    memset(serializedData, 0, sizeof(packet_t));
+    memcpy(serializedData, packet, sizeof(packet_t));
+    return serializedData;
+}
+
+// deserialize data
+packet_t *deserializeData(char *serializedData){
+    packet_t *packet = (packet_t *)malloc(sizeof(packet_t));
+    memset(packet, 0, sizeof(packet_t));
+    memcpy(packet, serializedData, sizeof(packet_t));
+    return packet;
+}
+
 #endif
