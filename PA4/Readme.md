@@ -10,4 +10,11 @@ section before we bind to the socket of the port and after clientHandler
 in main. This is because we don't want the information in these sections to 
 be mixing together. This would cause multiple different clients to send data
 to the server and then they would want to go into the clientHandler and they 
-could have the wrong data for the thread to complete the rotation. 
+could have the wrong data for the thread to complete the rotation. We plan on
+sending packages by first sending a packet with the operation, flags, and image size
+we will recieve this, extract values and then we will recieve the image data. We will
+then use the information from the packet that we got to perform the proper operation 
+on the image/image data and then send back the modifed image data per the client's 
+request.
+
+

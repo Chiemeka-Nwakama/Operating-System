@@ -1,6 +1,6 @@
 #include "server.h"
 
-#define PORT 7882//change to id of who submits it
+#define PORT 5253//change to id of who submits it
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 1024 
 
@@ -9,21 +9,22 @@ void *clientHandler(void *socket) {
     // Receive packets from the client
     char recvdata[sizeof(packet_t)];
     memset(recvdata, 0 , sizeof(packet_t));
-    int ret = recv(socket, recvdata, sizeof(packet_t), 0);
+    int ret = recv(*((int*)socket), recvdata, sizeof(packet_t), 0);
     if(ret == -1)
         perror("recv error");
 
     // Determine the packet operatation and flags
     packet_t *recvpacket;
-    memset(recvpacket, 0, sizeof(packet_t));
-    recvpacket = recvdata;
+    
+
+    recvpacket = deserializeData(recvdata);
     char operation;
     char flags;
     int size;
     memcpy(operation, recvpacket->operation, sizeof(unsigned char));
     memcpy(flags, recvpacket->flags, sizeof(unsigned char));
     size = recvpacket->size;
-    size = recvpacket->size;
+  
 
     // Receive the image data using the size
     
@@ -32,27 +33,30 @@ void *clientHandler(void *socket) {
     
     
       // Acknowledge the request and return the processed image data
-     char *serializedData = serializePacket(&recvpacket);
-     ret = send(socket, serializedData, sizeof(packet_t), 0);
-     if(ret == -1)
-        perror("send error");
+    //  char *serializedData = serializePacket(&recvpacket);
+    //  ret = send(*((int*)socket), serializedData, sizeof(packet_t), 0);
+    //  if(ret == -1)
+    //     perror("send error");
 
       
 
-  
+  return;
 
 }
 
 int main(int argc, char* argv[]) {
+       
 
     // Creating socket file descriptor
     int listen_fd, conn_fd;
     listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    
     if(listen_fd == -1)
         perror("socket error");
 
     struct sockaddr_in servaddr;
-    bzero(&servaddr, sizeof(servaddr));
+    memset(&servaddr,0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
@@ -68,11 +72,18 @@ int main(int argc, char* argv[]) {
         perror("listen error");
 
     // Accept connections and create the client handling threads
-    //struct sckaddr_in clientaddr;
-    //socklen_t clientaddr_len = sizeof(clientaddr);
-    conn_fd = accept(listen_fd, (struct sockaddr *) &servaddr, sizeof(packet_t));
+  
+    int i = 0;
+    pthread_t thds[10];
+
+    while(1){
+    conn_fd = accept(listen_fd, NULL, NULL);
+
+     pthread_t thd;
     
-    clientHandler(&conn_fd);
+    pthread_create(&thd, NULL, (void*) clientHandler, (void*) &conn_fd);
+  
+    }
 
     if(conn_fd == -1)
         perror("accept error");

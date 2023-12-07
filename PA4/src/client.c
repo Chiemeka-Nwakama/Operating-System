@@ -2,7 +2,7 @@
 
 
 
-#define PORT 7882
+#define PORT 5253
 #define BUFFER_SIZE 1024
 
 
@@ -40,33 +40,19 @@ int send_file(int socket, const char *filename) {
         perror("Error opening file");
         return -1;
     }
-    // Set up the request packet for the server and send it
-    //char buffer[BUFFER_SIZE];
-    //size_t bytesRead;
-    //while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) { //read file data into buffer until there is nothing left to send
-    //}
-    // Closes the file
-    //fclose(file);
-    // // send the serialized data to server
 
-    
-    packet_t packet; // makes packet variable
-    packet.operation = htons(IMG_OP_ROTATE); // calls htons proto revs
-//    strcpy(packet.operation, buffer);  // copies buffer file data into packet operation portion?
-//    strcpy(packet.flags, buffer);//copies buffer to packet flags operation?
- //   strcpy(packet.size, buffer);//copies buffer to packet size operation?
 
-   // int ret;
-    //ret = send(socket, buffer, bytesRead, 0); // sends data to server
-      
+    char* buffer = (char*)malloc(BUFF_SIZE);
     int ret;
-    while ((ret = fread(packet.checksum, 1, sizeof(packet.checksum), file)) > 0) {
-        packet.size = ret;
-        ret = send(socket, &packet, sizeof(packet_t), 0);
-        if (ret == -1) {
-            perror("send error");
-            break;
-        }
+    while ((ret = fread(buffer, 1, BUFF_SIZE, file)) > 0) {
+       
+
+    }
+
+     ret = send(socket, buffer, sizeof(buffer), 0); //sends file data
+     if (ret == -1) {
+        perror("send error");
+        
     }
     // Closes the file
     fclose(file);
@@ -77,31 +63,48 @@ int send_file(int socket, const char *filename) {
 int receive_file(int socket, const char *filename) {
     // Open the file
     // Open the file for writing
-    FILE *file = fopen(filename, "w");
+    FILE *file = fopen(filename, "wb");
     if (file == NULL) {
         perror("Error opening file");
         return -1;
     }
 
-        // Receive response packet
-    packet_t responsePacket;
-    char recvdata [BUFF_SIZE];
-    int ret = recv(socket, &responsePacket, sizeof(packet_t), 0);
-    memset(recvdata, 0,  BUFF_SIZE);
+        
+
+    // Check that the request was acknowledged
+    
+    char recvdata [sizeof(packet_t)];
+    memset(recvdata, 0,  sizeof(packet_t));
+    ret = recv(sockfd, &recvdata, sizeof(packet_t), 0); // receive data from server
+    if(ret == -1)
+        perror("recv error");
+
+    
+
+    // Deserialize the received data, check common.h and sample/client.c
+    packet_t *ackpacket = NULL;
+    ackpacket = deserializeData(recvdata);
+    if(ackpacket->operation == IMG_OP_ACK){//if operation is acknowlegement recieve data
+        receive_file(sockfd, argv[2]); // recieves file writes modified image to output directory
+    }
+
+
+
+
+    char* buffer = (char*)malloc(nthol(ackpacket->size));
+    int ret = recv(socket, buffer, sizeof(BUFF_SIZE), 0);
+
+
+    //deserialize
+
    
     if(ret == -1) // error check
         perror("recv error");
 
 
-    // // Check if the operation code is what you expect
-    // if (responsePacket.operation != PROTO_REV) {
-    //     fprintf(stderr, "Unexpected protocol revision\n");
-    //     fclose(file);
-    //     return -1;
-    // }
 
     // Receive the file data
-    char buffer[BUFFER_SIZE];
+ 
     ssize_t bytesRead;
    
     while ((bytesRead = fwrite(buffer, 1, bytesRead, file)) > 0) {
@@ -139,17 +142,24 @@ int main(int argc, char* argv[]) {
     if(sockfd == -1)
         perror("socket error");
 
+
+
     // Connect the socket
 
     
     struct sockaddr_in servaddr;
+
     servaddr.sin_family = AF_INET; // IPv4
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // server IP, since the server is on same machine, use localhost IP
     servaddr.sin_port = htons(PORT); // Port the server is listening on
 
     int ret = connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)); // establish connection to server
-    if(ret == -1)
+    if(ret == -1){
+        printf("here\n");
+
+
         perror("connect error");
+    }
 
     // Read the directory for all the images to rotate
 
@@ -170,9 +180,24 @@ int main(int argc, char* argv[]) {
 		}
 		char buf[1024];
 		sprintf(buf,"%s/%s",dirname,newEntry);
-		main_queue[queue_index].file_name = (char*)malloc((strlen(newEntry) + 1) * sizeof(char));
-		memset(main_queue[queue_index].file_name,0,MAX_QUEUE_LEN * sizeof(char));
-		strcpy(main_queue[queue_index].file_name, newEntry);    
+
+
+        main_queue[queue_index].file_name  = (char*)malloc(BUFF_SIZE * sizeof(char));
+
+		memset(main_queue[queue_index].file_name ,0,BUFF_SIZE* sizeof(char));
+
+		strcpy(main_queue[queue_index].file_name ,newEntry);
+
+
+
+
+
+
+
+
+
+
+	  
 		main_queue[queue_index].rotation_angle = atoi(argv[3]);
 		memset(buf,0,1024);
 
@@ -204,6 +229,7 @@ int main(int argc, char* argv[]) {
      
 
       FILE *fp = fopen(main_queue[next_remove].file_name, "rb"); // opens file
+      printf("%s\n", main_queue[next_remove].file_name);
 
     if (fp==NULL) //checks for error
         return -1;
@@ -216,7 +242,8 @@ int main(int argc, char* argv[]) {
 
     int file_size = ftell(fp); // gets the size of the file
     fclose(fp);
-    packet.size = file_size;
+    packet.size = htonl(file_size);
+
 
     
     // Serialize the packet, check common.h and sample/client.c, we don't want to serialize with this function because it doesn't exist
@@ -227,23 +254,10 @@ int main(int argc, char* argv[]) {
      if(ret == -1)
         perror("send error");
 
-    send_file(sockfd, main_queue[next_remove].file_name);//Don't we need to send what's in the packet?
+
+    send_file(sockfd, main_queue[next_remove].file_name); //sends file data after packet with operation info is  sent
 
 
-
-    
-
-    // Check that the request was acknowledged
-    
-    char recvdata [sizeof(packet_t)];
-    memset(recvdata, 0,  sizeof(packet_t));
-    ret = recv(sockfd, recvdata, sizeof(packet_t), 0); // receive data from server
-    if(ret == -1)
-        perror("recv error");
-
-    // Deserialize the received data, check common.h and sample/client.c
-    packet_t *ackpacket = NULL;
-    ackpacket = deserializeData(recvdata);
 
 
     next_remove = (next_remove + 1); // goes to next thing in queue
@@ -259,9 +273,10 @@ int main(int argc, char* argv[]) {
     free(ackpacket);
     ackpacket = NULL;    
     
-    close(sockfd); // close socket
+
     
     }
+    close(sockfd); // close socket
     
 return 0;
 
