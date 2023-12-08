@@ -18,25 +18,31 @@ void *clientHandler(void *socket) {
     // Determine the packet operatation and flags
     packet_t *recvpacket;
     recvpacket = deserializeData(recvdata);
-    char buf[BUFF_SIZE];
   
     // Receive the image data using the size
     char recvimage[sizeof(packet_t)];
     memset(recvimage, 0 , sizeof(packet_t));
     int retimage = recv(*((int*)socket), recvimage, ntohl(recvpacket->size), 0);
-    if(ret == -1)
+    if(retimage == -1)
         perror("recv error");
 
     // Process the image data based on the set of flags
-    char image_data = NULL;
 		/*
 		Stbi_load takes:
 		A file name, int pointer for width, height, and bpp
 		*/
 		int width, height;
-        char outputimage;
 
-		uint8_t* image_result = stbi_load(recvimage, &width, &height, NULL, CHANNEL_NUM);//make recvimage a file
+        //Creates a file for the recieved image to put data in
+        FILE *received_image;
+        received_image = fopen("received_image.txt", "wb");//what type of file should I make this
+        fprintf(received_image, recvimage);
+
+        //Creates a file for the outputimage to send to client
+        FILE *outputimage;
+        outputimage = fopen("output_image.txt", "wb");//what type of file should I make this
+
+		uint8_t* image_result = stbi_load(received_image, &width, &height, NULL, CHANNEL_NUM);//make recvimage a file
 		uint8_t** result_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
 		uint8_t** img_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
 
@@ -87,6 +93,19 @@ void *clientHandler(void *socket) {
     if(ret == -1)
     perror("send error");
 
+    //send picture back to client
+    char* buffer = (char*)malloc(BUFF_SIZE);
+    int retclient;
+    while((retclient = fread(buffer, 1, BUFF_SIZE, outputimage))){//is this the correct fread?
+
+    }
+    retclient = send(*((int*)socket), buffer, BUFF_SIZE, 0);
+    if(retclient == -1){
+        perror("send error");
+    }
+    fclose(outputimage);
+    fclose(received_image);
+
   return;
 }
 
@@ -124,11 +143,12 @@ int main(int argc, char* argv[]) {
     i++;
     }
 
-    if(conn_fd == -1)
+    if(*conn_fd == -1)
         perror("accept error");
     // Release any resources
-    close(conn_fd);
+    close(*conn_fd);
     close(listen_fd);
     return 0;
 }
+
 
