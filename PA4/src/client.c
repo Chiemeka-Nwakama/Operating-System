@@ -75,7 +75,7 @@ int receive_file(int socket, const char *filename) {
     
     char recvdata [sizeof(packet_t)];
     memset(recvdata, 0,  sizeof(packet_t));
-    ret = recv(sockfd, &recvdata, sizeof(packet_t), 0); // receive data from server
+    int ret = recv(socket, &recvdata, sizeof(packet_t), 0); // receive data from server
     if(ret == -1)
         perror("recv error");
 
@@ -85,14 +85,14 @@ int receive_file(int socket, const char *filename) {
     packet_t *ackpacket = NULL;
     ackpacket = deserializeData(recvdata);
     if(ackpacket->operation == IMG_OP_ACK){//if operation is acknowlegement recieve data
-        receive_file(sockfd, argv[2]); // recieves file writes modified image to output directory
+        receive_file(socket, filename); // recieves file writes modified image to output directory
     }
 
 
 
 
-    char* buffer = (char*)malloc(nthol(ackpacket->size));
-    int ret = recv(socket, buffer, sizeof(BUFF_SIZE), 0);
+    char* buffer = (char*)malloc(ntohl(ackpacket->size));
+    ret = recv(socket, buffer, sizeof(BUFF_SIZE), 0);
 
 
     //deserialize
@@ -117,6 +117,11 @@ int receive_file(int socket, const char *filename) {
 
     // Close the file
     fclose(file);
+    
+    free(ackpacket);
+    ackpacket = NULL;    
+    
+    
 
 
     // Receive the file data
@@ -270,8 +275,9 @@ int main(int argc, char* argv[]) {
 
     // Release any resources
 
-    free(ackpacket);
-    ackpacket = NULL;    
+
+    receive_file(sockfd, argv[2]);
+
     
 
     
