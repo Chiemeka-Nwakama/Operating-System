@@ -4,7 +4,7 @@
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 1024 
 
-int i = 0;
+
 
 
 void *clientHandler(void *socket) {
@@ -109,11 +109,14 @@ void *clientHandler(void *socket) {
   return;
 }
 
+
 int main(int argc, char* argv[]) {
-       
+       int i = 0;
     // Creating socket file descriptor
-    int listen_fd;
-    int conn_fd[10];
+    int listen_fd, conn_fd;
+    struct sockaddr_in server_addr, client_addr;
+
+
     listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     
     if(listen_fd == -1)
@@ -137,16 +140,20 @@ int main(int argc, char* argv[]) {
 
     // Accept connections and create the client handling threads
     pthread_t thds[10];
+    
+     
     while(1){
-    conn_fd[i] = accept(listen_fd, NULL, NULL);
-    pthread_create(&thds[i], NULL, (void*) clientHandler, (void*) &conn_fd[i]);
-    i++;
+         conn_fd = accept(listen_fd, NULL, NULL);
+        
+        if(conn_fd == -1)
+            perror("accept error");
+            continue;
+      
+         pthread_create(&thds[i], NULL, (void*) clientHandler, (void*) &conn_fd);
+         i++;
     }
-
-    if(*conn_fd == -1)
-        perror("accept error");
     // Release any resources
-    close(*conn_fd);
+    // close(*conn_fd);
     close(listen_fd);
     return 0;
 }
