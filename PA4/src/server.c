@@ -63,10 +63,10 @@ void *clientHandler(void *socket) {
 		//Hint figure out which function you will call.
 		//flip_left_to_right(img_matrix, result_matrix, width, height); or flip_upside_down(img_matrix, result_matrix ,width, height);
 
-		if (recvpacket->operation == 180) {
+		if (recvpacket->flags == 180) {
 			flip_left_to_right(img_matrix, result_matrix, width, height);
 		} 
-		else if (recvpacket->operation == 270) {
+		else if (recvpacket->flags == 270) {
 			flip_upside_down(img_matrix, result_matrix, width, height);
 		}
 		uint8_t* img_array = (uint8_t*)malloc(sizeof(uint8_t) * width * height); ///Hint malloc using sizeof(uint8_t) * width * height
