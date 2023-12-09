@@ -2,7 +2,7 @@
 
 
 
-#define PORT 5253
+#define PORT 4232
 #define BUFFER_SIZE 1024
 
 
@@ -234,7 +234,7 @@ int main(int argc, char* argv[]) {
      
 
       FILE *fp = fopen(main_queue[next_remove].file_name, "rb"); // opens file
-      printf("%s\n", main_queue[next_remove].file_name);
+      //printf("%s\n", main_queue[next_remove].file_name);
 
     if (fp==NULL) //checks for error
         return -1;
