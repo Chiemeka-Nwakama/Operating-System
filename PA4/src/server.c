@@ -1,6 +1,6 @@
 #include "server.h"
 
-#define PORT 5253//change to id of who submits it
+#define PORT 4232//change to id of who submits it
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 1024 
 
@@ -113,8 +113,7 @@ void *clientHandler(void *socket) {
 int main(int argc, char* argv[]) {
        int i = 0;
     // Creating socket file descriptor
-    int listen_fd, conn_fd;
-    struct sockaddr_in server_addr, client_addr;
+    int listen_fd;
 
 
     listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -143,11 +142,13 @@ int main(int argc, char* argv[]) {
     
      
     while(1){
-         conn_fd = accept(listen_fd, NULL, NULL);
+        int conn_fd;
+        conn_fd = accept(listen_fd, NULL, NULL);
         
-        if(conn_fd == -1)
+        if(conn_fd == -1){
             perror("accept error");
             continue;
+        }
       
          pthread_create(&thds[i], NULL, (void*) clientHandler, (void*) &conn_fd);
          i++;
