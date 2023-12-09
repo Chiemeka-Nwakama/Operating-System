@@ -23,7 +23,7 @@ void *clientHandler(void *socket) {
     char recvimage[sizeof(BUFFER_SIZE)];
     while(recvimage != ntohl(recvpacket->size)){//What should we put in the while loop statement?
     memset(recvimage, 0 , sizeof(BUFFER_SIZE));
-    int retimage = recv(*((int*)socket), recvimage, ntohl(recvpacket->size), 0);
+    int retimage = recv(*((int*)socket), recvimage, ntohl(recvpacket->size), 0);//concatinate to the end of variable because recvimage sends in chunks?
     if(retimage == -1)
         perror("recv error");
     }
