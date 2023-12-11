@@ -1,6 +1,6 @@
 #include "server.h"
 
-#define PORT 4230//change to id of who submits it
+#define PORT 4245//change to id of who submits it
 #define MAX_CLIENTS 5
 #define BUFFER_SIZE 1024 
 
@@ -21,9 +21,9 @@ void *clientHandler(void *socket) {
   
     // Receive the image data using the size
     char recvimage[sizeof(BUFFER_SIZE)];
-    while(recvimage != ntohl(recvpacket->size)){//What should we put in the while loop statement?
+    while(sizeof(recvimage) != ntohl(recvpacket->size)){//What should we put in the while loop statement?
     memset(recvimage, 0 , sizeof(BUFFER_SIZE));
-    int retimage = recv(*((int*)socket), recvimage, ntohl(recvpacket->size), 0);//concatinate to the end of variable because recvimage sends in chunks?
+    int retimage = recv(*((int*)socket), recvimage, ntohl(recvpacket->size), 0);
     if(retimage == -1)
         perror("recv error");
     }
@@ -33,12 +33,12 @@ void *clientHandler(void *socket) {
 
         //Creates a file for the recieved image to put data in
         FILE *received_image;
-        received_image = fopen("received_image.txt", "wb");//what type of file should I make this
+        received_image = fopen("received_image.png", "wb");
         fprintf(received_image, recvimage);
 
         //Creates a file for the outputimage to send to client
         FILE *outputimage;
-        outputimage = fopen("output_image.txt", "wb");//what type of file should I make this
+        outputimage = fopen("output_image.png", "wb");
 
 	uint8_t* image_result = stbi_load(received_image, &width, &height, NULL, CHANNEL_NUM);//make recvimage a file
 	uint8_t** result_matrix = (uint8_t **)malloc(sizeof(uint8_t*) * width);
