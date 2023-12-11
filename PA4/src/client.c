@@ -2,7 +2,7 @@
 
 
 
-#define PORT 4232
+#define PORT 4245
 #define BUFFER_SIZE 1024
 
 
@@ -136,11 +136,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-  
-
-
-
-
     // Set up socket
 
     int sockfd = socket(AF_INET, SOCK_STREAM, 0); // create socket to establish connection
@@ -148,12 +143,8 @@ int main(int argc, char* argv[]) {
         perror("socket error");
 
 
-
     // Connect the socket
-
-    
     struct sockaddr_in servaddr;
-
     servaddr.sin_family = AF_INET; // IPv4
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // server IP, since the server is on same machine, use localhost IP
     servaddr.sin_port = htons(PORT); // Port the server is listening on
@@ -161,8 +152,6 @@ int main(int argc, char* argv[]) {
     int ret = connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)); // establish connection to server
     if(ret == -1){
         printf("here\n");
-
-
         perror("connect error");
     }
 
@@ -186,22 +175,11 @@ int main(int argc, char* argv[]) {
 		char buf[1024];
 		sprintf(buf,"%s/%s",dirname,newEntry);
 
-
         main_queue[queue_index].file_name  = (char*)malloc(BUFF_SIZE * sizeof(char));
 
 		memset(main_queue[queue_index].file_name ,0,BUFF_SIZE* sizeof(char));
 
 		strcpy(main_queue[queue_index].file_name ,newEntry);
-
-
-
-
-
-
-
-
-
-
 	  
 		main_queue[queue_index].rotation_angle = atoi(argv[3]);
 		memset(buf,0,1024);
@@ -212,8 +190,10 @@ int main(int argc, char* argv[]) {
 		queue_index = (queue_index + 1);
 	}
     closedir(dir);
-    while(next_remove < queue_size){
     
+    
+    while(next_remove < queue_size){
+
     // Fill the content of packet, check sample/client.c
      packet_t packet; 
     // gives operation
@@ -221,7 +201,7 @@ int main(int argc, char* argv[]) {
 
 
     
-     if( main_queue[next_remove].rotation_angle == 180){
+     if(main_queue[next_remove].rotation_angle == 180){
 
         packet.flags = IMG_FLAG_ROTATE_180 ;
 
@@ -231,20 +211,23 @@ int main(int argc, char* argv[]) {
         packet.flags = IMG_FLAG_ROTATE_270 ;
      }
 
-     
+	printf("%s\n", main_queue[next_remove].file_name);
 
       FILE *fp = fopen(main_queue[next_remove].file_name, "rb"); // opens file
+      
       //printf("%s\n", main_queue[next_remove].file_name);
 
-    if (fp==NULL) //checks for error
-        return -1;
-
-    if (fseek(fp, 0, SEEK_END) < 0) { // fseeks to end of file
-        fclose(fp);
+    if (fp==NULL){ //checks for error
+        printf("got here1\n");
         return -1;
     }
 
+    if (fseek(fp, 0, SEEK_END) < 0) { // fseeks to end of file
 
+        fclose(fp);
+        return -1;
+    }
+            printf("got here2\n");
     int file_size = ftell(fp); // gets the size of the file
     fclose(fp);
     packet.size = htonl(file_size);
@@ -267,7 +250,8 @@ int main(int argc, char* argv[]) {
 
     next_remove = (next_remove + 1); // goes to next thing in queue
 
-
+   printf("%d\n", next_remove);
+   printf("%d\n", queue_size);
     // Receive the processed image and save it in the output dir
 
 
